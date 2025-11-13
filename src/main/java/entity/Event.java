@@ -8,10 +8,11 @@ public class Event {
     private final String description;
     private final EventCategory category;
     private final Location location;
-    private final LocalDateTime startTime;
+    private final LocalDateTime EventsTime;
+    private final String imageUrl;
 
     public Event(String id, String name, String description, EventCategory category,
-                 Location location, LocalDateTime startTime) {
+                 Location location, LocalDateTime startTime, String imageUrl) {
 
         // Validate and set ID
         if (id == null || id.trim().isEmpty()) {
@@ -45,12 +46,26 @@ public class Event {
         }
         this.location = location;
 
+        if ( imageUrl == null || imageUrl.trim().isEmpty()) {
+            this.imageUrl = "";
+        } else {
+            this.imageUrl = imageUrl.trim();
+        }
+
         // Set start time (must not be null)
         if (startTime == null) {
             throw new IllegalArgumentException("Start time cannot be null");
         }
-        this.startTime = startTime;
+        this.EventsTime = startTime;
     }
+
+    public String getImageUrl() {
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return "https://via.placeholder.com/300x200/CCCCCC/969696?text=No+Event+Image";
+        }
+        return imageUrl;
+    }
+
 
     // Core business method: Check if event is within specified radius
     public boolean isWithinRadius(Location userLocation, double radiusKm) {
@@ -80,7 +95,7 @@ public class Event {
     public String getDescription() { return description; }
     public EventCategory getCategory() { return category; }
     public Location getLocation() { return location; }
-    public LocalDateTime getStartTime() { return startTime; }
+    public LocalDateTime getStartTime() { return EventsTime; }
 
     @Override
     public boolean equals(Object o) {
@@ -97,6 +112,7 @@ public class Event {
 
     @Override
     public String toString() {
-        return String.format("Event{id='%s', name='%s', category=%s}", id, name, category);
+        return String.format("Event{id='%s', name='%s', category=%s, image=%s}",
+                id, name, category, getImageUrl());
     }
 }
