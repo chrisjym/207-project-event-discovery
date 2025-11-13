@@ -3,7 +3,7 @@ package interface_adapter.search_event_by_name;
 import entity.Event;
 
 public class SearchEventByNameState {
-    private Event event = new Event();
+    private Event event = null;
 
     public Event getEvent() {
         return event;

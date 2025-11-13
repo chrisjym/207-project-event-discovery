@@ -25,12 +25,23 @@ public class SearchEventByNameView extends JPanel {
         this.searchEventByNameViewModel = searchEventByNameViewModel;
         this.setLayout(new BorderLayout());
 
-        JPanel detailsPanel = createDetailsPanel(searchEventByNameViewModel);
-        add(detailsPanel, BorderLayout.WEST);
+        if (searchEventByNameViewModel.getEvent() == null) {
+            JPanel emptyPanel = new JPanel();
+            emptyPanel.setForeground(Color.WHITE);
 
-        JPanel imagePanel = createImagePanel(searchEventByNameViewModel);
-        add(imagePanel, BorderLayout.EAST);
+            JLabel emptyLabel = new JLabel("No Event Found");
+            emptyLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            emptyLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+            emptyPanel.add(emptyLabel);
+            add(emptyPanel);
+        }
+        else {
+            JPanel detailsPanel = createDetailsPanel(searchEventByNameViewModel);
+            add(detailsPanel, BorderLayout.WEST);
 
+            JPanel imagePanel = createImagePanel(searchEventByNameViewModel);
+            add(imagePanel, BorderLayout.EAST);
+        }
     }
 
     /**
@@ -59,7 +70,7 @@ public class SearchEventByNameView extends JPanel {
         });
 
         // Category
-        JLabel categoryLabel = new JLabel(searchEventByNameViewModel.EVENT.getCategory().getDisplayName());
+        JLabel categoryLabel = new JLabel(searchEventByNameViewModel.getEvent().getCategory().getDisplayName());
         categoryLabel.setFont(new Font("SansSerif", Font.BOLD, 11));
         categoryLabel.setForeground(new Color(59, 130, 246));
         categoryLabel.setOpaque(true);
@@ -71,7 +82,7 @@ public class SearchEventByNameView extends JPanel {
 
 
         // Name
-        JLabel nameLabel = new JLabel(searchEventByNameViewModel.EVENT.getName());
+        JLabel nameLabel = new JLabel(searchEventByNameViewModel.getEvent().getName());
         nameLabel.setFont(new Font("SansSerif", Font.BOLD, 32));
         nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(nameLabel);
@@ -79,7 +90,7 @@ public class SearchEventByNameView extends JPanel {
 
 
         // Date
-        JLabel dateLabel = new JLabel(searchEventByNameViewModel.EVENT.getDate());
+        JLabel dateLabel = new JLabel(searchEventByNameViewModel.getEvent().getDate());
         dateLabel.setFont(new Font("SansSerif", Font.BOLD, 32));
         dateLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(dateLabel);
@@ -94,7 +105,7 @@ public class SearchEventByNameView extends JPanel {
         mainPanel.add(Box.createVerticalStrut(12));
 
 
-        JTextArea descArea = new JTextArea(searchEventByNameViewModel.EVENT.getDescription());
+        JTextArea descArea = new JTextArea(searchEventByNameViewModel.getEvent().getDescription());
         descArea.setFont(new Font("SansSerif", Font.PLAIN, 14));
         descArea.setForeground(new Color(80, 80, 80));
         descArea.setBackground(Color.WHITE);
@@ -141,7 +152,7 @@ public class SearchEventByNameView extends JPanel {
         // Get image from TicketMaster API (Event Entity)
 
         try {
-            URL imageUrl = new URL(searchEventByNameViewModel.EVENT.getImageURL());
+            URL imageUrl = new URL(searchEventByNameViewModel.getEvent().getImageURL());
             ImageIcon icon = new ImageIcon(imageUrl);
             Image image = icon.getImage().getScaledInstance(500, 700, Image.SCALE_SMOOTH);
             JLabel imageLabel = new JLabel(new ImageIcon(image));
