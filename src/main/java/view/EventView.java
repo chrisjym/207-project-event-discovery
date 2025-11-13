@@ -11,7 +11,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 
-public class EventView extends JPanel implements ActionListener, PropertyChangeListener {
+public class EventView extends JPanel {
 
     private final String viewName = "event search";
     private final Event event;
