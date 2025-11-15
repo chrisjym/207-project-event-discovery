@@ -13,4 +13,10 @@ public interface SearchOutputBoundary {
      * @param failMessage the explanation of the failure
      */
     void prepareFailureView(String failMessage);
+
+    /**
+     * Switch to the search by event view
+     * @param outputData
+     */
+    void switchToEventSearchView(SearchOutputData outputData);
 }
