@@ -15,6 +15,13 @@ public class SearchPresenter implements SearchOutputBoundary {
 
     @Override
     public void prepareSuccessView(SearchOutputData outputData) {
+        SearchEventByNameState state = searchEventByNameViewModel.getState();
+        state.setEvent(outputData.getEvent());  // ← Assumes SearchOutputData has getEvent()
+        searchEventByNameViewModel.setState(state);
+        searchEventByNameViewModel.firePropertyChange();
+
+        viewManagerModel.setState(searchEventByNameViewModel.getViewName());
+        viewManagerModel.firePropertyChange();
     }
 
     @Override
@@ -24,7 +31,5 @@ public class SearchPresenter implements SearchOutputBoundary {
 
     @Override
     public void switchToEventSearchView(SearchOutputData outputData) {
-        viewManagerModel.setState(searchEventByNameViewModel.getViewName());
-        viewManagerModel.firePropertyChange();
     }
 }

@@ -1,5 +1,7 @@
 package view;
 
+import interface_adapter.search.SearchController;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -11,6 +13,7 @@ public class SearchBarView extends JPanel {
     private Color backgroundColor = new Color(250, 250, 250);
     private boolean isFocused = false;
     private String searchDescription = null;
+    private SearchController searchController = null;
 
 
     public SearchBarView(String text) {
@@ -70,6 +73,11 @@ public class SearchBarView extends JPanel {
         container.add(searchField, BorderLayout.CENTER);
         return container;
     }
+
+    public void setSearchController(SearchController controller) {
+        this.searchController = controller;
+    }
+
 
 
 }
