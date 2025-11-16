@@ -1,6 +1,8 @@
 package interface_adapter.search;
 
 import interface_adapter.ViewManagerModel;
+import interface_adapter.search_event_by_name.SearchEventByNameState;
+import interface_adapter.search_event_by_name.SearchEventByNameViewModel;
 import use_case.search.SearchOutputBoundary;
 import use_case.search.SearchOutputData;
 
