@@ -47,7 +47,7 @@ public class AppBuilder {
     private EventDescriptionViewModel eventDescriptionViewModel;
     private EventDescriptionView eventDescriptionView;
 
-    // Event DAO (for now, in-memory)
+    // temporary Event DAO (for now, in-memory)
     final EventDataAccessInterface eventDataAccessObject = new InMemoryEventDataAccessObject();
 
     private final JPanel cardPanel = new JPanel();
@@ -56,14 +56,7 @@ public class AppBuilder {
     final ViewManagerModel viewManagerModel = new ViewManagerModel();
     ViewManager viewManager = new ViewManager(cardPanel, cardLayout, viewManagerModel);
 
-    // set which data access implementation to use, can be any
-    // of the classes from the data_access package
-
-    // DAO version using local file storage
     final FileUserDataAccessObject userDataAccessObject = new FileUserDataAccessObject("users.csv", userFactory);
-
-    // DAO version using a shared external database
-    // final DBUserDataAccessObject userDataAccessObject = new DBUserDataAccessObject(userFactory);
 
     private SignupView signupView;
     private SignupViewModel signupViewModel;

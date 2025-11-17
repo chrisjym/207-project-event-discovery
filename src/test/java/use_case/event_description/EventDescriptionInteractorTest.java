@@ -49,23 +49,19 @@ class EventDescriptionInteractorTest {
         EventDescriptionInputData input =
                 new EventDescriptionInputData("1", 43.1, -79.0);
 
-        // Act
         interactor.execute(input);
 
-        // Assert
         assertNull(presenter.lastError);
         assertNotNull(presenter.lastOutput);
 
         assertEquals("Music Festival", presenter.lastOutput.getName());
         assertEquals("123 Queen St", presenter.lastOutput.getAddress());
 
-        // Distance should be positive (roughly 11 km, but we only care > 0)
         assertTrue(presenter.lastOutput.getDistanceKm() > 0);
     }
 
     @Test
     void eventNotFound_callsFailure() {
-        // Arrange
         InMemoryEventDataAccessObject eventDAO = new InMemoryEventDataAccessObject();
         TestPresenter presenter = new TestPresenter();
         DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
@@ -76,10 +72,8 @@ class EventDescriptionInteractorTest {
         EventDescriptionInputData input =
                 new EventDescriptionInputData("999", 43.0, -79.0);
 
-        // Act
         interactor.execute(input);
 
-        // Assert
         assertNull(presenter.lastOutput);
         assertEquals("Event not found.", presenter.lastError);
     }
