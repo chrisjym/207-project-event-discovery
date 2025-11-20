@@ -1,5 +1,14 @@
 package app;
 
+import data_access.InMemoryEventDataAccessObject;
+import data_access.EventDataAccessInterface;
+import interface_adapter.event_description.EventDescriptionViewModel;
+import interface_adapter.event_description.EventDescriptionPresenter;
+import interface_adapter.event_description.EventDescriptionController;
+import use_case.event_description.*;
+import view.EventDescriptionView;
+
+
 import data_access.FileUserDataAccessObject;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
@@ -35,20 +44,19 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AppBuilder {
+    private EventDescriptionViewModel eventDescriptionViewModel;
+    private EventDescriptionView eventDescriptionView;
+
+    // temporary Event DAO (for now, in-memory)
+    final EventDataAccessInterface eventDataAccessObject = new InMemoryEventDataAccessObject();
+
     private final JPanel cardPanel = new JPanel();
     private final CardLayout cardLayout = new CardLayout();
     final UserFactory userFactory = new UserFactory();
     final ViewManagerModel viewManagerModel = new ViewManagerModel();
     ViewManager viewManager = new ViewManager(cardPanel, cardLayout, viewManagerModel);
 
-    // set which data access implementation to use, can be any
-    // of the classes from the data_access package
-
-    // DAO version using local file storage
     final FileUserDataAccessObject userDataAccessObject = new FileUserDataAccessObject("users.csv", userFactory);
-
-    // DAO version using a shared external database
-    // final DBUserDataAccessObject userDataAccessObject = new DBUserDataAccessObject(userFactory);
 
     private SignupView signupView;
     private SignupViewModel signupViewModel;
@@ -132,13 +140,41 @@ public class AppBuilder {
         return this;
     }
 
+    public AppBuilder addEventDescriptionView() {
+        eventDescriptionViewModel = new EventDescriptionViewModel();
+        eventDescriptionView = new EventDescriptionView(eventDescriptionViewModel);
+        cardPanel.add(eventDescriptionView, eventDescriptionView.getViewName());
+        return this;
+    }
+
+    public AppBuilder addEventDescriptionUseCase() {
+        DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
+
+        EventDescriptionOutputBoundary presenter =
+                new EventDescriptionPresenter(eventDescriptionViewModel);
+
+        EventDescriptionInputBoundary interactor =
+                new EventDescriptionInteractor(eventDataAccessObject, presenter, distanceCalculator);
+
+        EventDescriptionController controller =
+                new EventDescriptionController(interactor);
+
+        eventDescriptionView.setController(controller);
+        return this;
+    }
+
+
     public JFrame build() {
         final JFrame application = new JFrame("User Login Example");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         application.add(cardPanel);
 
-        viewManagerModel.setState(signupView.getViewName());
+        // TODO: FOR DEBUGGING PURPOSES ONLY
+        viewManagerModel.setState(eventDescriptionView.getViewName());
+
+        // TODO: KEEP CODE BELOW
+        // viewManagerModel.setState(signupView.getViewName());
         viewManagerModel.firePropertyChange();
 
         return application;
