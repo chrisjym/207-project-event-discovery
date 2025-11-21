@@ -1,7 +1,8 @@
 package view;
 
 import entity.Event;
-import interface_adapter.save_button.SaveButtonController;
+import interface_adapter.save_event.SaveEventController;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -14,7 +15,7 @@ public class SaveButtonView extends JPanel {
     private final String viewName = "save";
     private JButton saveButton = null;
     private Event event;
-    private SaveButtonController saveButtonController;
+    private SaveEventController saveButtonController = null;
 
 
     public SaveButtonView() {
@@ -81,6 +82,7 @@ public class SaveButtonView extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (saveButtonController != null && event != null) {
+                    saveButtonController.saveEvent(event);
                     saveButton.setText("Saved");
                     saveButton.setEnabled(false);
                 }
@@ -92,7 +94,7 @@ public class SaveButtonView extends JPanel {
         this.event = event;
     }
 
-    public void setSaveEventController(SaveButtonController controller) {
+    public void setSaveEventController(SaveEventController controller) {
         this.saveButtonController = controller;
     }
 

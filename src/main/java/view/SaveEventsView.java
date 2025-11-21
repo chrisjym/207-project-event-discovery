@@ -4,6 +4,7 @@ import entity.Event;
 import entity.EventCategory;
 import interface_adapter.save_event.SaveEventController;
 import interface_adapter.save_event.SaveEventViewModel;
+import use_case.save_event.SaveEventInteractor;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -20,9 +21,11 @@ public class SaveEventsView extends JPanel implements PropertyChangeListener {
     private List<Event> savedEvents = new ArrayList<>();
     private JPanel eventsContainer;
     private SaveEventController saveEventController = null;
+    private SaveEventInteractor saveEventInteractor = null;
 
-    public SaveEventsView(SaveEventViewModel saveEventsViewModel) {
+    public SaveEventsView(SaveEventViewModel saveEventsViewModel, SaveEventInteractor saveEventInteractor) {
         this.saveEventsViewModel = saveEventsViewModel;
+        this.saveEventInteractor = saveEventInteractor;
         saveEventsViewModel.addPropertyChangeListener(this);
 
         initializeUI();
@@ -78,8 +81,11 @@ public class SaveEventsView extends JPanel implements PropertyChangeListener {
 
     }
 
-    private void refreshEventsList() {
+    public void refreshEventsList() {
         eventsContainer.removeAll();
+
+        List<Event> savedEvents = saveEventInteractor.getSavedEvents();
+
 
         if (savedEvents.isEmpty()) {
             JPanel emptyPanel = new JPanel(new FlowLayout());
