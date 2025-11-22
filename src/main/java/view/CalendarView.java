@@ -24,8 +24,6 @@ public class  CalendarView extends JPanel implements ActionListener {
         this.setLayout(new BorderLayout());
 
         monthYearLabel.setFont(new Font(textFormat, Font.BOLD, 18));
-//        previousMonthButton.addActionListener(e -> changeMonth(-1));
-//        nextMonthButton.addActionListener(e -> changeMonth(1));
         previousMonthButton.addActionListener(
                 new ActionListener() {
                     @Override
@@ -96,8 +94,6 @@ public class  CalendarView extends JPanel implements ActionListener {
             dayButtons[dayToIndex].setEnabled(true);
 
             final LocalDate date = yearMonth.atDay(day);
-//            dayButtons[dayToIndex].addActionListener(e -> {getSelectedDay(date);
-//            });
             dayButtons[dayToIndex].addActionListener(
                 new ActionListener() {
                     @Override
@@ -115,29 +111,6 @@ public class  CalendarView extends JPanel implements ActionListener {
 
     public void actionPerformed(ActionEvent evt) {
         System.out.println("Click " + evt.getActionCommand());
-    }
-
-    //for Demo to test how the Panel looks
-    public static void main(String[] args) {
-        // Run on the Event Dispatch Thread for thread safety
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                // Create the main window
-                final JFrame frame = new JFrame("Calendar View Test");
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-                // Create and add the CalendarView
-                final CalendarView calendarView = new CalendarView();
-                frame.add(calendarView);
-
-                // Size and display the window
-                frame.pack();
-                frame.setSize(600, 500);
-                frame.setLocationRelativeTo(null);  // Center on screen
-                frame.setVisible(true);
-            }
-        });
     }
 
 }
