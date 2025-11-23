@@ -159,7 +159,7 @@ public class AppBuilder {
         EventDescriptionController controller =
                 new EventDescriptionController(interactor);
 
-        eventDescriptionView.setController(controller);
+//        eventDescriptionView.setController(controller);
         return this;
     }
 

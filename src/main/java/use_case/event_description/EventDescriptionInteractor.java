@@ -4,6 +4,8 @@ import data_access.EventDataAccessInterface;
 import entity.Event;
 import entity.Location;
 
+import java.time.format.DateTimeFormatter;
+
 public class EventDescriptionInteractor implements EventDescriptionInputBoundary {
 
     private final EventDataAccessInterface eventDataAccessObject;
@@ -21,6 +23,8 @@ public class EventDescriptionInteractor implements EventDescriptionInputBoundary
     @Override
     public void execute(EventDescriptionInputData inputData) {
         Event event = eventDataAccessObject.get(inputData.getEventId());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
 
         if (event == null) {
             presenter.prepareFailView("Event not found.");
@@ -40,8 +44,8 @@ public class EventDescriptionInteractor implements EventDescriptionInputBoundary
                 event.getName(),
                 event.getDescription(),
                 event.getAddress(),
-                event.getCategory(),
-                event.getDateTime(),
+                event.getCategory().toString(),
+                event.getStartTime().format(formatter),
                 distanceKm
         );
 
