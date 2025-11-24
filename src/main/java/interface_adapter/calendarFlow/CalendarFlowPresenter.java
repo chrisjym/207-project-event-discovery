@@ -1,4 +1,11 @@
 package interface_adapter.calendarFlow;
 
-public class CalendarFlowPresenter {
+import interface_adapter.ViewManagerModel;
+import use_case.calendarFlow.CalendarFlowOutputBoundary;
+import use_case.calendarFlow.CalendarFlowOutputData;
+
+public class CalendarFlowPresenter implements CalendarFlowOutputBoundary {
+    private
+
+
 }

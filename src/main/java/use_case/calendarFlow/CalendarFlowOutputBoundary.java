@@ -15,7 +15,11 @@ public interface CalendarFlowOutputBoundary {
      * Prepares the view when no events are found for the selected date.
      * @param errorMessage the error message to display
      */
-    void prepareFailEventsView(String errorMessage);
+    void prepareFailView(String errorMessage);
 
-
+//    //to implement later
+//    /**
+//     * Switch to the Dashboard View.
+//     */
+//    void switchToDashboardView();
 }

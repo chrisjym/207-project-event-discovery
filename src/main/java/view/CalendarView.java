@@ -7,6 +7,9 @@ import java.awt.event.ActionEvent;
 import java.time.LocalDate;
 import java.time.YearMonth;
 
+import interface_adapter.calendarFlow.CalendarFlowController;
+import entity.Location;
+
 
 public class  CalendarView extends JPanel implements ActionListener {
     private final String viewName = "Calendar View";
@@ -19,6 +22,21 @@ public class  CalendarView extends JPanel implements ActionListener {
     private YearMonth currentYearMonth; // Track which month in which year we're displaying
     private String textFormat = "Times New Roman";
 
+    private CalendarFlowController calendarFlowController;
+    private Location userLocation;
+    private double searchRadiusKm = 50.0; //default
+
+    public void setEventController(CalendarFlowController controller) {
+        this.calendarFlowController = controller;
+    }
+
+    public void setUserLocation(Location location) {
+        this.userLocation = location;
+    }
+
+    public void setSearchRadiusKm(double km) {
+        this.searchRadiusKm = km;
+    }
 
     public CalendarView(){
         this.setLayout(new BorderLayout());
@@ -107,6 +125,10 @@ public class  CalendarView extends JPanel implements ActionListener {
 
     public void getSelectedDay(LocalDate date){
         System.out.println("Selected day: " + date.toString());
+        if (calendarFlowController != null){
+            calendarFlowController.execute(date, userLocation, searchRadiusKm);
+        }
+
     }
 
     public void actionPerformed(ActionEvent evt) {
