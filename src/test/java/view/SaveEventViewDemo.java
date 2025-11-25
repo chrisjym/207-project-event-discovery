@@ -292,54 +292,6 @@ public class SaveEventViewDemo {
         "https://via.placeholder.com/500x700"
         );
     }
-//
-//    private static Event createSampleEvent2() {
-//        return new Event(
-//                "event-2",
-//                "Drake: For All The Dogs World Tour",
-//                "Drake brings his latest album to life with special guests and incredible production. Don't miss the 6 God performing all his hits and new tracks in his hometown!",
-//                EventCategory.MUSIC,
-//                new Location("Rogers Centre, 1 Blue Jays Way, Toronto, ON", 43.6414, -79.3894),
-//                LocalDateTime.of(2025, 11, 28, 20, 0),
-//                "https://via.placeholder.com/500x700"
-//        );
-//    }
-//
-//    private static Event createSampleEvent3() {
-//        return new Event(
-//                "event-3",
-//                "Hamilton: An American Musical",
-//                "Lin-Manuel Miranda's revolutionary story of America's founding father Alexander Hamilton. Winner of 11 Tony Awards including Best Musical. A must-see theatrical masterpiece!",
-//                EventCategory.ARTS_THEATRE,
-//                new Location("Princess of Wales Theatre, 300 King St W, Toronto, ON", 43.6465, -79.3914),
-//                LocalDateTime.of(2026, 1, 20, 19, 30),
-//                "https://via.placeholder.com/500x700"
-//        );
-//    }
-//
-//    private static Event createSampleEvent4() {
-//        return new Event(
-//                "event-4",
-//                "Toronto Maple Leafs vs Montreal Canadiens",
-//                "The greatest rivalry in hockey! Experience the intensity as the Leafs face off against the Habs in this classic Original Six matchup. Don't miss the action!",
-//                EventCategory.SPORTS,
-//                new Location("Scotiabank Arena, 40 Bay St, Toronto, ON", 43.6435, -79.3791),
-//                LocalDateTime.of(2025, 12, 7, 19, 0),
-//                "https://via.placeholder.com/500x700"
-//        );
-//    }
-//
-//    private static Event createSampleEvent5() {
-//        return new Event(
-//                "event-5",
-//                "The Weeknd: After Hours til Dawn Tour",
-//                "Experience The Weeknd's groundbreaking performance featuring state-of-the-art production, stunning visuals, and hits from 'After Hours' and 'Dawn FM'. An unforgettable night!",
-//                EventCategory.MUSIC,
-//                new Location("Scotiabank Arena, 40 Bay St, Toronto, ON", 43.6435, -79.3791),
-//                LocalDateTime.of(2025, 11, 30, 20, 30),
-//                "https://via.placeholder.com/500x700"
-//        );
-//    }
 
     // Mock User Data Access for demo purposes
     private static class MockUserDataAccess implements LoginUserDataAccessInterface {
