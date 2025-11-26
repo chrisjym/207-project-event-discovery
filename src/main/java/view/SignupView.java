@@ -46,7 +46,7 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         title.setFont(new Font("SegoeUI", Font.BOLD, 36));
 
-        JLabel subtitleLabel = new JLabel("Please enter your details to sign in");
+        JLabel subtitleLabel = new JLabel(SignupViewModel.TITLE_CAPTION);
         subtitleLabel.setFont(new Font("SegoeUI", Font.PLAIN, 14));
         subtitleLabel.setForeground(new Color(107, 114, 128));
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -119,8 +119,6 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         formPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
         formPanel.add(repeatPasswordInfo);
-
-
 
         rightPanel.add(titlePanel);
         rightPanel.add(Box.createRigidArea(new Dimension(0, 20)));
