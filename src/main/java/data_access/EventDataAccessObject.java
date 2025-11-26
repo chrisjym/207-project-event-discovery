@@ -250,7 +250,7 @@ public class EventDataAccessObject {
             }
 
             JSONArray venues = embedded.getJSONArray("venues");
-            if (venues.length() == 0) {
+            if (venues.isEmpty()) {
                 return null;
             }
 
@@ -265,7 +265,7 @@ public class EventDataAccessObject {
             if (venue.has("address")) {
                 JSONObject address = venue.getJSONObject("address");
                 if (address.has("line1")) {
-                    if (addressBuilder.length() > 0) {
+                    if (!addressBuilder.isEmpty()) {
                         addressBuilder.append(", ");
                     }
                     addressBuilder.append(address.getString("line1"));

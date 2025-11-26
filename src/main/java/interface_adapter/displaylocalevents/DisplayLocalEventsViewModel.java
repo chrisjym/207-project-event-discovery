@@ -1,4 +1,4 @@
-package interface_adapter.DisplayLocalEvents;
+package interface_adapter.displaylocalevents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,18 +71,12 @@ public class DisplayLocalEventsViewModel {
         }
     }
 
-    // ====== ViewModel State ======
-
-    // A list of event cards to be displayed in the UI (already sorted by distance)
     private List<EventCard> eventCards = new ArrayList<>();
 
-    // A message to display on successful use case execution (e.g., "Found 5 events within 10 km")
     private String message = "";
 
-    // Error message in case something goes wrong
     private String error = "";
 
-    // ====== Getters / Setters ======
 
     public List<EventCard> getEventCards() {
         return eventCards;
@@ -108,7 +102,6 @@ public class DisplayLocalEventsViewModel {
         this.error = error != null ? error : "";
     }
 
-    // ====== Helper Methods ======
 
     /** Returns true if there are events to display. */
     public boolean hasEvents() {

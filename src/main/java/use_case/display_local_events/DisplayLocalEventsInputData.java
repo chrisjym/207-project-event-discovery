@@ -1,4 +1,4 @@
-package use_case.displaylocalevents;
+package use_case.display_local_events;
 import entity.Location;
 import entity.EventCategory;
 

@@ -1,8 +1,8 @@
-package interface_adapter.DisplayLocalEvents;
+package interface_adapter.displaylocalevents;
 
 import entity.Event;
-import use_case.displaylocalevents.DisplayLocalEventsOutputBoundary;
-import use_case.displaylocalevents.DisplayLocalEventsOutputData;
+import use_case.display_local_events.DisplayLocalEventsOutputBoundary;
+import use_case.display_local_events.DisplayLocalEventsOutputData;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -11,7 +11,6 @@ import java.util.Map;
 
 /**
  * Presenter for the Display Local Events use case.
- *
  * This class implements the OutputBoundary and is responsible for:
  * - Transforming raw use case output data (domain objects) into a UI-friendly ViewModel.
  * - Formatting dates, distances, and messages for display.
