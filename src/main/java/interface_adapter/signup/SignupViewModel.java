@@ -13,6 +13,7 @@ public class SignupViewModel extends ViewModel<SignupState> {
     public static final String REPEAT_PASSWORD_LABEL = "Re-enter password";
     public static final String TITLE = "Event Gate";
     public static final String CAPTION = "Join us and never miss an event!";
+    public static final String TITLE_CAPTION = "Please enter your details to sign in";
 
     public static final String SIGNUP_BUTTON_LABEL = "Sign up";
     public static final String CANCEL_BUTTON_LABEL = "Cancel";

@@ -43,16 +43,25 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setBorder(BorderFactory.createEmptyBorder(100, 0, 0, 0));
 
-        final JLabel title = new JLabel("Login Screen");
+        final JLabel title = new JLabel(LoginViewModel.TITLE_LABEL);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         title.setFont(new Font("SegoeUI", Font.BOLD, 36));
 
+        JLabel subtitleLabel = new JLabel(LoginViewModel.CAPTION);
+        subtitleLabel.setFont(new Font("SegoeUI", Font.PLAIN, 14));
+        subtitleLabel.setForeground(new Color(107, 114, 128));
+        subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+
         final LabelTextPanel usernameInfo = new LabelTextPanel(
                 new JLabel("Username"), usernameInputField);
+        usernameInfo.setAlignmentX(Component.CENTER_ALIGNMENT);
         final LabelTextPanel passwordInfo = new LabelTextPanel(
                 new JLabel("Password"), passwordInputField);
+        passwordInfo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         final JPanel buttons = new JPanel();
+        buttons.setAlignmentX(Component.CENTER_ALIGNMENT);
         logIn = new JButton("Log In");
         buttons.add(logIn);
         cancel = new JButton("Back");
@@ -140,6 +149,7 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
 
         titlePanel.add(title);
         titlePanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        titlePanel.add(subtitleLabel);
 
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
