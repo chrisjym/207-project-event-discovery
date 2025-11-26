@@ -1,5 +1,4 @@
-package use_case.displaylocalevents;
-import use_case.displaylocalevents.DisplayLocalEventsOutputData;
+package use_case.display_local_events;
 
 public interface DisplayLocalEventsOutputBoundary {
     void presentSuccess(DisplayLocalEventsOutputData outputData);

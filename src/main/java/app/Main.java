@@ -16,10 +16,14 @@ public class Main {
                 .addLoginView()
                 .addSignupView()
                 .addLoggedInView()
+                .addEventDescriptionView()
+                .addDisplayLocalEventsView()
                 .addSignupUseCase()
                 .addLoginUseCase()
                 .addChangePasswordUseCase()
                 .addLogoutUseCase()
+                .addDisplayLocalEventsUseCase()
+                .addEventDescriptionUseCase()
                 .build();
 
         application.pack();

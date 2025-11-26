@@ -1,6 +1,19 @@
 package app;
 
+import data_access.InMemoryEventDataAccessObject;
+import data_access.EventDataAccessInterface;
+import interface_adapter.event_description.EventDescriptionViewModel;
+import interface_adapter.event_description.EventDescriptionPresenter;
+import interface_adapter.event_description.EventDescriptionController;
+import use_case.event_description.*;
+import view.EventDescriptionView;
+
+
 import data_access.FileUserDataAccessObject;
+import data_access.EventDataAccessObject;
+import entity.Location;
+
+import data_access.TicketmasterEventRepositoryAdapter;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.logged_in.ChangePasswordController;
@@ -14,6 +27,11 @@ import interface_adapter.logout.LogoutPresenter;
 import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupPresenter;
 import interface_adapter.signup.SignupViewModel;
+
+import interface_adapter.displaylocalevents.DisplayLocalEventsController;
+import interface_adapter.displaylocalevents.DisplayLocalEventsPresenter;
+import interface_adapter.displaylocalevents.DisplayLocalEventsViewModel;
+
 import use_case.change_password.ChangePasswordInputBoundary;
 import use_case.change_password.ChangePasswordInteractor;
 import use_case.change_password.ChangePasswordOutputBoundary;
@@ -26,15 +44,30 @@ import use_case.logout.LogoutOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
+
+import use_case.display_local_events.DisplayLocalEventsInputBoundary;
+import use_case.display_local_events.DisplayLocalEventsInteractor;
+import use_case.display_local_events.DisplayLocalEventsOutputBoundary;
+
 import view.LoggedInView;
 import view.LoginView;
 import view.SignupView;
 import view.ViewManager;
+import view.DisplayLocalEventsView;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class AppBuilder {
+
+    private static final String TICKETMASTER_API_KEY = "YOUR_API_KEY_HERE";
+
+    private EventDescriptionViewModel eventDescriptionViewModel;
+    private EventDescriptionView eventDescriptionView;
+
+    // temporary Event DAO (for now, in-memory)
+    final EventDataAccessInterface eventDataAccessObject = new InMemoryEventDataAccessObject();
+
     private final JPanel cardPanel = new JPanel();
     private final CardLayout cardLayout = new CardLayout();
     final UserFactory userFactory = new UserFactory();
@@ -45,10 +78,12 @@ public class AppBuilder {
     // of the classes from the data_access package
 
     // DAO version using local file storage
-    final FileUserDataAccessObject userDataAccessObject = new FileUserDataAccessObject("users.csv", userFactory);
+    final FileUserDataAccessObject userDataAccessObject =
+            new FileUserDataAccessObject("users.csv", userFactory);
 
     // DAO version using a shared external database
-    // final DBUserDataAccessObject userDataAccessObject = new DBUserDataAccessObject(userFactory);
+    // final DBUserDataAccessObject userDataAccessObject =
+    //        new DBUserDataAccessObject(userFactory);
 
     private SignupView signupView;
     private SignupViewModel signupViewModel;
@@ -56,6 +91,9 @@ public class AppBuilder {
     private LoggedInViewModel loggedInViewModel;
     private LoggedInView loggedInView;
     private LoginView loginView;
+
+    private DisplayLocalEventsViewModel displayLocalEventsViewModel;
+    private DisplayLocalEventsView displayLocalEventsView;
 
     public AppBuilder() {
         cardPanel.setLayout(cardLayout);
@@ -81,6 +119,14 @@ public class AppBuilder {
         cardPanel.add(loggedInView, loggedInView.getViewName());
         return this;
     }
+
+    public AppBuilder addDisplayLocalEventsView() {
+        displayLocalEventsViewModel = new DisplayLocalEventsViewModel();
+        displayLocalEventsView = new DisplayLocalEventsView(displayLocalEventsViewModel);
+        cardPanel.add(displayLocalEventsView, displayLocalEventsView.getViewName());
+        return this;
+    }
+
 
     public AppBuilder addSignupUseCase() {
         final SignupOutputBoundary signupOutputBoundary = new SignupPresenter(viewManagerModel,
@@ -132,12 +178,66 @@ public class AppBuilder {
         return this;
     }
 
+
+    public AppBuilder addDisplayLocalEventsUseCase() {
+        EventDataAccessObject dao = new EventDataAccessObject();
+
+        Location defaultCenter = new Location("Toronto, ON", 43.6532, -79.3832);
+        double defaultRadiusKm = 50.0;
+
+        TicketmasterEventRepositoryAdapter eventRepository =
+                new TicketmasterEventRepositoryAdapter(dao, defaultCenter, defaultRadiusKm);
+
+        DisplayLocalEventsOutputBoundary outputBoundary =
+                new DisplayLocalEventsPresenter(displayLocalEventsViewModel);
+
+        DisplayLocalEventsInputBoundary interactor =
+                new DisplayLocalEventsInteractor(eventRepository, outputBoundary);
+
+        DisplayLocalEventsController controller =
+                new DisplayLocalEventsController(interactor);
+
+
+        displayLocalEventsView.setController(controller);
+
+        return this;
+    }
+
+
+    public AppBuilder addEventDescriptionView() {
+        eventDescriptionViewModel = new EventDescriptionViewModel();
+        eventDescriptionView = new EventDescriptionView(eventDescriptionViewModel);
+        cardPanel.add(eventDescriptionView, eventDescriptionView.getViewName());
+        return this;
+    }
+
+    public AppBuilder addEventDescriptionUseCase() {
+        DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
+
+        EventDescriptionOutputBoundary presenter =
+                new EventDescriptionPresenter(eventDescriptionViewModel);
+
+        EventDescriptionInputBoundary interactor =
+                new EventDescriptionInteractor(eventDataAccessObject, presenter, distanceCalculator);
+
+        EventDescriptionController controller =
+                new EventDescriptionController(interactor);
+
+//        eventDescriptionView.setController(controller);
+        return this;
+    }
+
+
     public JFrame build() {
         final JFrame application = new JFrame("User Login Example");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         application.add(cardPanel);
 
+        // TODO: FOR DEBUGGING PURPOSES ONLY
+        //viewManagerModel.setState(eventDescriptionView.getViewName());
+
+        // TODO: KEEP CODE BELOW
         viewManagerModel.setState(signupView.getViewName());
         viewManagerModel.firePropertyChange();
 

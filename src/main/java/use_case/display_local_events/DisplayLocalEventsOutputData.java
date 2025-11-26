@@ -1,4 +1,4 @@
-package use_case.displaylocalevents;
+package use_case.display_local_events;
 
 import entity.Event;
 import java.util.List;

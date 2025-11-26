@@ -1,0 +1,346 @@
+package view;
+
+import entity.Location;
+import interface_adapter.displaylocalevents.DisplayLocalEventsController;
+import interface_adapter.displaylocalevents.DisplayLocalEventsViewModel;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+public class DisplayLocalEventsView extends JPanel {
+
+    private DisplayLocalEventsController controller;
+    private final DisplayLocalEventsViewModel viewModel;
+
+    private final String viewName = "display local events";
+
+    private final JLabel appNameLabel = new JLabel("Main Page");
+
+    private final JComboBox<String> cityBox =
+            new JComboBox<>(new String[]{"Toronto", "Montreal", "New York"});
+    private final JButton searchButton = new JButton("Search");
+
+    private final JComboBox<String> categoryBox =
+            new JComboBox<>(new String[]{"ALL", "Music", "Sports", "Arts & Theatre", "Film"});
+    private final JComboBox<String> sortBox =
+            new JComboBox<>(new String[]{"Distance", "Date", "Name"});
+
+    private final JTextField nameSearchField = new JTextField(15);
+    private final JButton nameSearchButton = new JButton("Search");
+
+    private final JButton calendarButton = new JButton("Calendar");
+    private final JButton logoutButton = new JButton("Logout");
+
+    private final JPanel cardsContainer = new JPanel();
+    private final JScrollPane cardsScrollPane;
+    private final JLabel emptyStateLabel =
+            new JLabel("Choose a location and click search to see local events.", SwingConstants.CENTER);
+
+    private static final double DEFAULT_RADIUS_KM = 1000.0;
+
+    public DisplayLocalEventsView(DisplayLocalEventsViewModel viewModel) {
+        this.viewModel = viewModel;
+
+        setLayout(new BorderLayout());
+        setBorder(new EmptyBorder(5, 5, 5, 5));
+        setBackground(new Color(245, 247, 250));
+
+        add(buildTopBar(), BorderLayout.NORTH);
+        add(buildSideBar(), BorderLayout.WEST);
+
+        cardsContainer.setBorder(new EmptyBorder(10, 10, 10, 10));
+        cardsContainer.setBackground(new Color(245, 247, 250));
+        cardsScrollPane = new JScrollPane(cardsContainer);
+        cardsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        add(cardsScrollPane, BorderLayout.CENTER);
+
+        renderEmptyState();
+
+        sortBox.addActionListener(e -> renderEvents());
+
+        calendarButton.addActionListener(e ->
+                JOptionPane.showMessageDialog(this, "Calendar UI not implemented yet."));
+        logoutButton.addActionListener(e ->
+                JOptionPane.showMessageDialog(this, "Logout / Login UI not implemented yet."));
+    }
+
+    public String getViewName() {
+        return viewName;
+    }
+
+    public void setController(DisplayLocalEventsController controller) {
+        this.controller = controller;
+        searchButton.addActionListener(e -> onSearch());
+    }
+
+    public String getSearchByNameQuery() {
+        return nameSearchField.getText().trim();
+    }
+
+    public void setSearchByNameAction(java.awt.event.ActionListener listener) {
+        nameSearchButton.addActionListener(listener);
+    }
+
+    private JPanel buildTopBar() {
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBorder(new EmptyBorder(8, 12, 8, 12));
+        topBar.setBackground(new Color(25, 118, 210));
+
+        appNameLabel.setFont(appNameLabel.getFont().deriveFont(Font.BOLD, 18f));
+        appNameLabel.setForeground(Color.WHITE);
+        topBar.add(appNameLabel, BorderLayout.WEST);
+
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        centerPanel.setOpaque(false);
+
+        JLabel locationLabel = new JLabel("Location:");
+        locationLabel.setForeground(Color.WHITE);
+        centerPanel.add(locationLabel);
+
+        cityBox.setPreferredSize(new Dimension(130, 24));
+        centerPanel.add(cityBox);
+
+        styleTopBarButton(searchButton);
+        centerPanel.add(searchButton);
+
+        topBar.add(centerPanel, BorderLayout.CENTER);
+
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        rightPanel.setOpaque(false);
+
+        JLabel categoryLabel = new JLabel("Category:");
+        categoryLabel.setForeground(Color.WHITE);
+        rightPanel.add(categoryLabel);
+
+        categoryBox.setPreferredSize(new Dimension(140, 24));
+        rightPanel.add(categoryBox);
+
+        JLabel sortLabel = new JLabel("Sorting by:");
+        sortLabel.setForeground(Color.WHITE);
+        rightPanel.add(sortLabel);
+
+        sortBox.setPreferredSize(new Dimension(120, 24));
+        rightPanel.add(sortBox);
+
+        JLabel nameSearchLabel = new JLabel("Search by name:");
+        nameSearchLabel.setForeground(Color.WHITE);
+        rightPanel.add(nameSearchLabel);
+
+        nameSearchField.setPreferredSize(new Dimension(150, 24));
+        rightPanel.add(nameSearchField);
+
+        styleTopBarButton(nameSearchButton);
+        rightPanel.add(nameSearchButton);
+
+        topBar.add(rightPanel, BorderLayout.EAST);
+
+        return topBar;
+    }
+
+    private void styleTopBarButton(JButton button) {
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    private JPanel buildSideBar() {
+        JPanel sideBar = new JPanel();
+        sideBar.setLayout(new BoxLayout(sideBar, BoxLayout.Y_AXIS));
+        sideBar.setBorder(new EmptyBorder(10, 8, 10, 8));
+        sideBar.setBackground(new Color(245, 247, 250));
+
+        styleSideButton(calendarButton);
+        styleSideButton(logoutButton);
+
+        sideBar.add(calendarButton);
+        sideBar.add(Box.createVerticalStrut(10));
+        sideBar.add(logoutButton);
+        sideBar.add(Box.createVerticalGlue());
+
+        return sideBar;
+    }
+
+    private void styleSideButton(JButton button) {
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setMaximumSize(new Dimension(140, 36));
+        button.setFocusPainted(false);
+        button.setBackground(Color.WHITE);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(220, 220, 220)),
+                new EmptyBorder(5, 10, 5, 10)
+        ));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    private void onSearch() {
+        if (controller == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Controller not initialized.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String selectedCity = (String) cityBox.getSelectedItem();
+        if (selectedCity == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select a location.",
+                    "Input required",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        Location userLoc;
+        switch (selectedCity) {
+            case "Montreal":
+                userLoc = new Location("Montreal, QC", 45.5019, -73.5674);
+                break;
+            case "New York":
+                userLoc = new Location("New York, NY", 40.7128, -74.0060);
+                break;
+            case "Toronto":
+            default:
+                userLoc = new Location("Toronto, ON", 43.6532, -79.3832);
+                break;
+        }
+
+        String category = (String) categoryBox.getSelectedItem();
+        controller.display(userLoc, DEFAULT_RADIUS_KM, category);
+        renderEvents();
+    }
+
+    private void renderEmptyState() {
+        cardsContainer.removeAll();
+        cardsContainer.setLayout(new BorderLayout());
+        emptyStateLabel.setFont(emptyStateLabel.getFont().deriveFont(Font.PLAIN, 14f));
+        emptyStateLabel.setForeground(new Color(120, 120, 120));
+        cardsContainer.add(emptyStateLabel, BorderLayout.CENTER);
+        cardsContainer.revalidate();
+        cardsContainer.repaint();
+    }
+
+    public void renderEvents() {
+        cardsContainer.removeAll();
+
+        if (viewModel.hasError()) {
+            cardsContainer.setLayout(new BorderLayout());
+            JLabel errorLabel = new JLabel("Error: " + viewModel.getError(), SwingConstants.CENTER);
+            errorLabel.setForeground(new Color(211, 47, 47));
+            errorLabel.setFont(errorLabel.getFont().deriveFont(Font.BOLD, 13f));
+            cardsContainer.add(errorLabel, BorderLayout.CENTER);
+        } else if (!viewModel.hasEvents()) {
+            renderEmptyState();
+            return;
+        } else {
+            List<DisplayLocalEventsViewModel.EventCard> cards =
+                    new ArrayList<>(viewModel.getEventCards());
+
+            String sortBy = (String) sortBox.getSelectedItem();
+            if ("Name".equalsIgnoreCase(sortBy)) {
+                cards.sort(Comparator.comparing(DisplayLocalEventsViewModel.EventCard::getName,
+                        String.CASE_INSENSITIVE_ORDER));
+            } else if ("Date".equalsIgnoreCase(sortBy)) {
+                cards.sort(Comparator.comparing(DisplayLocalEventsViewModel.EventCard::getDateTime));
+            } else {
+                cards.sort(Comparator.comparingDouble(this::parseDistance));
+            }
+
+            cardsContainer.setLayout(new GridLayout(0, 2, 10, 10));
+            for (DisplayLocalEventsViewModel.EventCard cardData : cards) {
+                JPanel card = buildEventCard(cardData);
+                cardsContainer.add(card);
+            }
+        }
+
+        cardsContainer.revalidate();
+        cardsContainer.repaint();
+    }
+
+    private double parseDistance(DisplayLocalEventsViewModel.EventCard card) {
+        String text = card.getDistanceText();
+        if (text == null || text.isBlank()) {
+            return Double.MAX_VALUE;
+        }
+        try {
+            String firstToken = text.split("\\s+")[0];
+            return Double.parseDouble(firstToken);
+        } catch (Exception e) {
+            return Double.MAX_VALUE;
+        }
+    }
+
+    private JPanel buildEventCard(DisplayLocalEventsViewModel.EventCard cardData) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(4, 4, 4, 4),
+                BorderFactory.createLineBorder(new Color(230, 230, 230), 1)
+        ));
+        card.setBackground(Color.WHITE);
+
+        JLabel pictureLabel = new JLabel("", SwingConstants.CENTER);
+        pictureLabel.setPreferredSize(new Dimension(200, 110));
+
+        ImageIcon icon = loadImageIcon(cardData.getImageUrl(), 200, 110);
+        if (icon != null) {
+            pictureLabel.setIcon(icon);
+        } else {
+            pictureLabel.setText("No Image");
+            pictureLabel.setForeground(new Color(150, 150, 150));
+        }
+
+        card.add(pictureLabel, BorderLayout.NORTH);
+
+        JPanel textPanel = new JPanel();
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setBorder(new EmptyBorder(8, 8, 8, 8));
+        textPanel.setOpaque(false);
+
+        JLabel nameLabel = new JLabel(cardData.getName());
+        nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD, 13f));
+
+        JLabel addressLabel = new JLabel(cardData.getAddress());
+        addressLabel.setForeground(new Color(100, 100, 100));
+
+        JLabel dateLabel = new JLabel(cardData.getDateTime());
+        dateLabel.setForeground(new Color(120, 120, 120));
+
+        JLabel distanceLabel = new JLabel(cardData.getDistanceText());
+        distanceLabel.setForeground(new Color(33, 150, 243));
+
+        textPanel.add(nameLabel);
+        textPanel.add(Box.createVerticalStrut(2));
+        textPanel.add(addressLabel);
+        textPanel.add(Box.createVerticalStrut(2));
+        textPanel.add(dateLabel);
+        textPanel.add(Box.createVerticalStrut(4));
+        textPanel.add(distanceLabel);
+
+        card.add(textPanel, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    private ImageIcon loadImageIcon(String imageUrl, int width, int height) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return null;
+        }
+        try {
+            BufferedImage img = ImageIO.read(new URL(imageUrl));
+            if (img == null) {
+                return null;
+            }
+            Image scaled = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            return new ImageIcon(scaled);
+        } catch (IOException e) {
+            System.err.println("Failed to load image: " + e.getMessage());
+            return null;
+        }
+    }
+}
