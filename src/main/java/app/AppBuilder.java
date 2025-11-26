@@ -59,9 +59,6 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AppBuilder {
-
-    private static final String TICKETMASTER_API_KEY = "YOUR_API_KEY_HERE";
-
     private EventDescriptionViewModel eventDescriptionViewModel;
     private EventDescriptionView eventDescriptionView;
 
