@@ -137,6 +137,7 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
     /**
      *
      * @return a custom JPanel for the left side of the sign up view
+     * Written with the help of Generative AI
      */
     private JPanel brandPanel() {
         JPanel panel = new JPanel() {

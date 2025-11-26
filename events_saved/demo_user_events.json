@@ -1,0 +1,13 @@
+[{
+    "imageUrl": "https://via.placeholder.com/500x700",
+    "name": "Toronto Raptors vs Los Angeles Lakers",
+    "description": "An epic showdown between two NBA powerhouses. Watch the Raptors take on LeBron James and the Lakers in what promises to be an unforgettable night of basketball action!",
+    "startTime": "2025-12-15T19:30",
+    "location": {
+        "address": "Scotiabank Arena, 40 Bay St, Toronto, ON",
+        "latitude": 43.6435,
+        "longitude": -79.3791
+    },
+    "id": "event-1",
+    "category": "SPORTS"
+}]

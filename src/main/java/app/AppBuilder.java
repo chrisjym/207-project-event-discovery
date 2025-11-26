@@ -6,13 +6,15 @@ import interface_adapter.event_description.EventDescriptionViewModel;
 import interface_adapter.event_description.EventDescriptionPresenter;
 import interface_adapter.event_description.EventDescriptionController;
 import use_case.event_description.*;
-import view.EventDescriptionView;
+import view.*;
 
 
 import data_access.FileUserDataAccessObject;
 import entity.Location;
-
+import data_access.EventDataAccessObject;
 import data_access.TicketmasterEventRepositoryAdapter;
+import data_access.SearchEventDataAccessObject;
+import data_access.FileSavedEventsDataAccessObject;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.logged_in.ChangePasswordController;
@@ -23,9 +25,17 @@ import interface_adapter.login.LoginPresenter;
 import interface_adapter.login.LoginViewModel;
 import interface_adapter.logout.LogoutController;
 import interface_adapter.logout.LogoutPresenter;
+import interface_adapter.search.SearchController;
+import interface_adapter.search.SearchPresenter;
+import interface_adapter.search_event_by_name.SearchEventByNameController;
+import interface_adapter.search_event_by_name.SearchEventByNamePresenter;
+import interface_adapter.search_event_by_name.SearchEventByNameViewModel;
 import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupPresenter;
 import interface_adapter.signup.SignupViewModel;
+import interface_adapter.save_event.SaveEventController;
+import interface_adapter.save_event.SaveEventPresenter;
+import interface_adapter.save_event.SaveEventViewModel;
 
 import interface_adapter.displaylocalevents.DisplayLocalEventsController;
 import interface_adapter.displaylocalevents.DisplayLocalEventsPresenter;
@@ -40,6 +50,12 @@ import use_case.login.LoginOutputBoundary;
 import use_case.logout.LogoutInputBoundary;
 import use_case.logout.LogoutInteractor;
 import use_case.logout.LogoutOutputBoundary;
+import use_case.search.SearchInputBoundary;
+import use_case.search.SearchInteractor;
+import use_case.search.SearchOutputBoundary;
+import use_case.search_event_by_name.SearchEventByNameInputBoundary;
+import use_case.search_event_by_name.SearchEventByNameInteractor;
+import use_case.search_event_by_name.SearchEventByNameOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
@@ -53,12 +69,14 @@ import view.LoginView;
 import view.SignupView;
 import view.ViewManager;
 import view.DisplayLocalEventsView;
+import use_case.save_event.SaveEventInputBoundary;
+import use_case.save_event.SaveEventInteractor;
+import use_case.save_event.SaveEventOutputBoundary;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class AppBuilder {
-
     private EventDescriptionViewModel eventDescriptionViewModel;
     private EventDescriptionView eventDescriptionView;
 
@@ -88,6 +106,12 @@ public class AppBuilder {
     private LoggedInViewModel loggedInViewModel;
     private LoggedInView loggedInView;
     private LoginView loginView;
+    private SearchEventByNameView searchEventView;
+    private SearchEventByNameViewModel searchEventViewModel;
+    private SaveEventViewModel saveEventViewModel;
+    private SaveEventsView saveEventsView;
+    private SaveButtonView saveButtonView;
+
 
     private DisplayLocalEventsViewModel displayLocalEventsViewModel;
     private DisplayLocalEventsView displayLocalEventsView;
@@ -123,6 +147,88 @@ public class AppBuilder {
         cardPanel.add(displayLocalEventsView, displayLocalEventsView.getViewName());
         return this;
     }
+
+
+    public AppBuilder addEventSearchView() {
+        searchEventViewModel = new SearchEventByNameViewModel();
+        searchEventView = new SearchEventByNameView(searchEventViewModel);
+        cardPanel.add(searchEventView, searchEventView.getViewName());
+        return this;
+    }
+
+    public AppBuilder addSearchUseCase() {
+        final SearchEventDataAccessObject searchDataAccess = new SearchEventDataAccessObject();
+
+        final SearchOutputBoundary searchPresenter = new SearchPresenter(
+                searchEventViewModel,
+                viewManagerModel
+        );
+
+        final SearchInputBoundary searchInteractor = new SearchInteractor(
+                searchDataAccess,
+                searchPresenter
+        );
+
+        final SearchController searchController = new SearchController(searchInteractor);
+
+        return this;
+    }
+
+    public AppBuilder addSaveEventView() {
+        saveEventViewModel = new SaveEventViewModel();
+        saveEventsView = new SaveEventsView(saveEventViewModel);
+        cardPanel.add(saveEventsView, saveEventsView.getViewName());
+        return this;
+    }
+
+    public AppBuilder addSaveEventUseCase() {
+        final FileSavedEventsDataAccessObject savedEventsDAO = new FileSavedEventsDataAccessObject();
+
+        final SaveEventOutputBoundary saveEventPresenter = new SaveEventPresenter(
+                saveEventViewModel,
+                viewManagerModel
+        );
+
+        final SaveEventInputBoundary saveEventInteractor = new SaveEventInteractor(
+                saveEventPresenter,
+                savedEventsDAO,
+                userDataAccessObject
+        );
+
+        final SaveEventController saveEventController = new SaveEventController(saveEventInteractor);
+
+        // Set the controller and interactor for the views
+        if (saveEventsView != null) {
+            saveEventsView.setSaveEventController(saveEventController);
+
+        }
+
+        if (saveButtonView != null) {
+            saveButtonView.setSaveEventController(saveEventController);
+        }
+
+        return this;
+    }
+
+    public AppBuilder addSearchEventByNameUseCase() {
+        final SearchEventDataAccessObject searchDataAccess = new SearchEventDataAccessObject();
+
+        final SearchEventByNameOutputBoundary presenter = new SearchEventByNamePresenter(
+                searchEventViewModel,
+                viewManagerModel
+        );
+
+        final SearchEventByNameInputBoundary interactor = new SearchEventByNameInteractor(
+                searchDataAccess,
+                presenter
+        );
+
+        final SearchEventByNameController controller = new SearchEventByNameController(interactor);
+        searchEventView.setEventController(controller);
+
+        return this;
+    }
+
 
 
     public AppBuilder addSignupUseCase() {
