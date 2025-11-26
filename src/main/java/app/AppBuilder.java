@@ -171,10 +171,10 @@ public class AppBuilder {
         application.add(cardPanel);
 
         // TODO: FOR DEBUGGING PURPOSES ONLY
-        viewManagerModel.setState(eventDescriptionView.getViewName());
+        //viewManagerModel.setState(eventDescriptionView.getViewName());
 
         // TODO: KEEP CODE BELOW
-        // viewManagerModel.setState(signupView.getViewName());
+        viewManagerModel.setState(signupView.getViewName());
         viewManagerModel.firePropertyChange();
 
         return application;
