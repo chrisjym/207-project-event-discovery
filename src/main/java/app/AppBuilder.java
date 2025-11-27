@@ -185,23 +185,6 @@ public class AppBuilder {
         return this;
     }
 
-    public AppBuilder addSearchUseCase() {
-        final SearchEventDataAccessObject searchDataAccess = new SearchEventDataAccessObject();
-
-        final SearchOutputBoundary searchPresenter = new SearchPresenter(
-                searchEventViewModel,
-                viewManagerModel
-        );
-
-        final SearchInputBoundary searchInteractor = new SearchInteractor(
-                searchDataAccess,
-                searchPresenter
-        );
-
-        final SearchController searchController = new SearchController(searchInteractor);
-
-        return this;
-    }
 
     public AppBuilder addSaveEventView() {
         saveEventViewModel = new SaveEventViewModel();
@@ -322,8 +305,22 @@ public class AppBuilder {
     public AppBuilder addDisplayLocalEventsUseCase() {
         EventDataAccessObject dao = new EventDataAccessObject();
 
+        final SearchEventDataAccessObject searchDataAccess = new SearchEventDataAccessObject();
+
+        final SearchOutputBoundary searchPresenter = new SearchPresenter(
+                searchEventViewModel,
+                viewManagerModel
+        );
+
+        final SearchInputBoundary searchInteractor = new SearchInteractor(
+                searchDataAccess,
+                searchPresenter
+        );
+
+        final SearchController searchController = new SearchController(searchInteractor);
+
         Location defaultCenter = new Location("Toronto, ON", 43.6532, -79.3832);
-        double defaultRadiusKm = 50.0;
+        double defaultRadiusKm = 100.0;
 
         TicketmasterEventRepositoryAdapter eventRepository =
                 new TicketmasterEventRepositoryAdapter(dao, defaultCenter, defaultRadiusKm);
@@ -337,8 +334,8 @@ public class AppBuilder {
         DisplayLocalEventsController controller =
                 new DisplayLocalEventsController(interactor);
 
-
         displayLocalEventsView.setController(controller);
+        displayLocalEventsView.setSearchBarController(searchController);
 
         return this;
     }

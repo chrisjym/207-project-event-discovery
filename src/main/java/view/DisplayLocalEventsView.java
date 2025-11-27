@@ -3,6 +3,7 @@ package view;
 import entity.Location;
 import interface_adapter.displaylocalevents.DisplayLocalEventsController;
 import interface_adapter.displaylocalevents.DisplayLocalEventsViewModel;
+import interface_adapter.search.SearchController;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -22,7 +23,7 @@ public class DisplayLocalEventsView extends JPanel {
 
     private final String viewName = "display local events";
 
-    private final JLabel appNameLabel = new JLabel("Main Page");
+    private final JLabel appNameLabel = new JLabel("Dashboard");
 
     private final JComboBox<String> cityBox =
             new JComboBox<>(new String[]{"Toronto", "Montreal", "New York"});
@@ -33,8 +34,7 @@ public class DisplayLocalEventsView extends JPanel {
     private final JComboBox<String> sortBox =
             new JComboBox<>(new String[]{"Distance", "Date", "Name"});
 
-    private final JTextField nameSearchField = new JTextField(15);
-    private final JButton nameSearchButton = new JButton("Search");
+    private SearchBarView searchBarView;
 
     private final JButton calendarButton = new JButton("Calendar");
     private final JButton logoutButton = new JButton("Logout");
@@ -79,14 +79,6 @@ public class DisplayLocalEventsView extends JPanel {
     public void setController(DisplayLocalEventsController controller) {
         this.controller = controller;
         searchButton.addActionListener(e -> onSearch());
-    }
-
-    public String getSearchByNameQuery() {
-        return nameSearchField.getText().trim();
-    }
-
-    public void setSearchByNameAction(java.awt.event.ActionListener listener) {
-        nameSearchButton.addActionListener(listener);
     }
 
     private JPanel buildTopBar() {
@@ -134,11 +126,10 @@ public class DisplayLocalEventsView extends JPanel {
         nameSearchLabel.setForeground(Color.WHITE);
         rightPanel.add(nameSearchLabel);
 
-        nameSearchField.setPreferredSize(new Dimension(150, 24));
-        rightPanel.add(nameSearchField);
-
-        styleTopBarButton(nameSearchButton);
-        rightPanel.add(nameSearchButton);
+        Location defaultLocation = getCurrentLocation();
+        searchBarView = new SearchBarView("Search events...", defaultLocation);
+        searchBarView.setPreferredSize(new Dimension(200, 40));
+        rightPanel.add(searchBarView);
 
         topBar.add(rightPanel, BorderLayout.EAST);
 
@@ -207,7 +198,7 @@ public class DisplayLocalEventsView extends JPanel {
                 break;
             case "Toronto":
             default:
-                userLoc = new Location("Toronto, ON", 43.6532, -79.3832);
+                userLoc = new Location("Toronto, ON", 43.6435, -79.3791);
                 break;
         }
 
@@ -261,6 +252,23 @@ public class DisplayLocalEventsView extends JPanel {
 
         cardsContainer.revalidate();
         cardsContainer.repaint();
+    }
+
+    private Location getCurrentLocation() {
+        String selectedCity = (String) cityBox.getSelectedItem();
+        if (selectedCity == null) {
+            return new Location("Toronto, ON", 43.6532, -79.3832);
+        }
+
+        switch (selectedCity) {
+            case "Montreal":
+                return new Location("Montreal, QC", 45.5019, -73.5674);
+            case "New York":
+                return new Location("New York, NY", 40.7128, -74.0060);
+            case "Toronto":
+            default:
+                return new Location("Toronto, ON", 43.6532, -79.3832);
+        }
     }
 
     private double parseDistance(DisplayLocalEventsViewModel.EventCard card) {
@@ -342,5 +350,9 @@ public class DisplayLocalEventsView extends JPanel {
             System.err.println("Failed to load image: " + e.getMessage());
             return null;
         }
+    }
+
+    public void setSearchBarController(SearchController controller) {
+        this.searchBarView.setSearchController(controller);
     }
 }

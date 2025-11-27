@@ -24,7 +24,7 @@ public class SearchBarView extends JPanel {
 
     public SearchBarView(String text, Location userLocation) {
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(600, 60));
+        setPreferredSize(new Dimension(600, 30));
         setOpaque(false);
         this.searchDescription = text;
         this.location = userLocation;
@@ -104,7 +104,9 @@ public class SearchBarView extends JPanel {
         return container;
     }
 
-
+    public String getSearchText() {
+        return searchField.getText();
+    }
 
     public void setSearchController(SearchController controller) {
         this.searchController = controller;

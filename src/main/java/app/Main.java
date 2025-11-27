@@ -29,6 +29,7 @@ public class Main {
                 .addEventDescriptionUseCase()    // NEW
                 .addSaveEventUseCase()
                 .addDisplayLocalEventsUseCase()
+                .addSearchEventByNameUseCase()
                 .build();
 
         application.pack();
