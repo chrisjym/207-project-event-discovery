@@ -4,29 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * State class for DisplayLocalEvents feature.
- * Holds all the data needed for the view.
+ * 简化的 State 类 - 只存储必要的数据
  */
 public class DisplayLocalEventsState {
     private List<DisplayLocalEventsViewModel.EventCard> eventCards = new ArrayList<>();
     private String message = "";
     private String error = "";
 
-
+    // 搜索参数
     private String lastSearchLocation = "";
     private String lastSearchCategory = "";
     private double lastSearchRadius = 0.0;
 
-    private boolean isLoading = false;
-    private String selectedEventId = null;
-
-
+    // Getters and Setters
     public List<DisplayLocalEventsViewModel.EventCard> getEventCards() {
-        return new ArrayList<>(eventCards); // Return copy for immutability
+        return eventCards;
     }
 
     public void setEventCards(List<DisplayLocalEventsViewModel.EventCard> cards) {
-        this.eventCards = (cards != null ? new ArrayList<>(cards) : new ArrayList<>());
+        this.eventCards = (cards != null ? cards : new ArrayList<>());
     }
 
     public String getMessage() {
@@ -45,7 +41,6 @@ public class DisplayLocalEventsState {
         this.error = (err != null ? err : "");
     }
 
-
     public boolean hasEvents() {
         return !eventCards.isEmpty();
     }
@@ -53,7 +48,6 @@ public class DisplayLocalEventsState {
     public boolean hasError() {
         return !error.isEmpty();
     }
-
 
     public String getLastSearchLocation() {
         return lastSearchLocation;
@@ -77,34 +71,5 @@ public class DisplayLocalEventsState {
 
     public void setLastSearchRadius(double radius) {
         this.lastSearchRadius = radius;
-    }
-
-    public boolean isLoading() {
-        return isLoading;
-    }
-
-    public void setLoading(boolean loading) {
-        this.isLoading = loading;
-    }
-
-    public String getSelectedEventId() {
-        return selectedEventId;
-    }
-
-    public void setSelectedEventId(String eventId) {
-        this.selectedEventId = eventId;
-    }
-
-    public DisplayLocalEventsState copy() {
-        DisplayLocalEventsState newState = new DisplayLocalEventsState();
-        newState.setEventCards(this.eventCards);
-        newState.setMessage(this.message);
-        newState.setError(this.error);
-        newState.setLastSearchLocation(this.lastSearchLocation);
-        newState.setLastSearchCategory(this.lastSearchCategory);
-        newState.setLastSearchRadius(this.lastSearchRadius);
-        newState.setLoading(this.isLoading);
-        newState.setSelectedEventId(this.selectedEventId);
-        return newState;
     }
 }

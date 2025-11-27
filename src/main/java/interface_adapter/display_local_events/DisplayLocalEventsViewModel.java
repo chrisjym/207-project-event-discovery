@@ -4,21 +4,12 @@ import interface_adapter.ViewModel;
 import java.time.LocalDate;
 import java.util.List;
 
-
+/**
+ * 简化的 ViewModel - 基本的 PropertyChange 支持
+ */
 public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsState> {
 
     public static final String VIEW_NAME = "display local events";
-
-
-    public static final String PROPERTY_STATE = "state";
-    public static final String PROPERTY_EVENT_CARDS = "eventCards";
-    public static final String PROPERTY_SEARCH_PARAMS = "searchParamsUpdated";
-    public static final String PROPERTY_CATEGORY = "categoryChanged";
-    public static final String PROPERTY_LOCATION = "locationChanged";
-    public static final String PROPERTY_ERROR = "error";
-    public static final String PROPERTY_LOADING = "loading";
-    public static final String PROPERTY_MESSAGE = "message";
-
     private LocalDate selectedDateFromCalendar;
 
     public DisplayLocalEventsViewModel() {
@@ -26,6 +17,9 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
         this.setState(new DisplayLocalEventsState());
     }
 
+    /**
+     * EventCard 内部类 - 表示单个事件卡片
+     */
     public static class EventCard {
         private final String id;
         private final String name;
@@ -55,14 +49,14 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
         public String getImageUrl() { return imageUrl; }
     }
 
+    // 基本的 getter/setter 方法
     public List<EventCard> getEventCards() {
         return this.getState().getEventCards();
     }
 
     public void setEventCards(List<EventCard> eventCards) {
         this.getState().setEventCards(eventCards);
-        this.firePropertyChange(PROPERTY_EVENT_CARDS);
-        this.firePropertyChange(PROPERTY_STATE);
+        this.firePropertyChange();
     }
 
     public String getMessage() {
@@ -71,8 +65,7 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
 
     public void setMessage(String message) {
         this.getState().setMessage(message);
-        this.firePropertyChange(PROPERTY_MESSAGE);
-        this.firePropertyChange(PROPERTY_STATE);
+        this.firePropertyChange();
     }
 
     public String getError() {
@@ -81,8 +74,7 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
 
     public void setError(String error) {
         this.getState().setError(error);
-        this.firePropertyChange(PROPERTY_ERROR);
-        this.firePropertyChange(PROPERTY_STATE);
+        this.firePropertyChange();
     }
 
     public boolean hasEvents() {
@@ -93,32 +85,12 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
         return this.getState().hasError();
     }
 
-
-    public boolean isLoading() {
-        return this.getState().isLoading();
-    }
-
-    public void setLoading(boolean loading) {
-        this.getState().setLoading(loading);
-        this.firePropertyChange(PROPERTY_LOADING);
-    }
-
+    // 搜索参数方法
     public void updateSearchParams(String location, String category, double radius) {
-        String oldLocation = this.getState().getLastSearchLocation();
-        String oldCategory = this.getState().getLastSearchCategory();
-
         this.getState().setLastSearchLocation(location);
         this.getState().setLastSearchCategory(category);
         this.getState().setLastSearchRadius(radius);
-
-        if (!oldLocation.equals(location)) {
-            this.firePropertyChange(PROPERTY_LOCATION);
-        }
-        if (!oldCategory.equals(category)) {
-            this.firePropertyChange(PROPERTY_CATEGORY);
-        }
-
-        this.firePropertyChange(PROPERTY_SEARCH_PARAMS);
+        this.firePropertyChange();
     }
 
     public String getLastSearchLocation() {
@@ -131,25 +103,5 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
 
     public double getLastSearchRadius() {
         return this.getState().getLastSearchRadius();
-    }
-
-    public LocalDate getSelectedDateFromCalendar() {
-        return selectedDateFromCalendar;
-    }
-
-    public void setSelectedDateFromCalendar(LocalDate date) {
-        this.selectedDateFromCalendar = date;
-        this.firePropertyChange("selectedDate");
-    }
-
-    public void clearEvents() {
-        this.getState().setEventCards(List.of());
-        this.getState().setError("");
-        this.getState().setMessage("");
-        this.firePropertyChange(PROPERTY_STATE);
-    }
-
-    public void refresh() {
-        this.firePropertyChange(PROPERTY_STATE);
     }
 }

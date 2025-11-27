@@ -37,14 +37,11 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
     private final JPanel cardsContainer = new JPanel();
     private final JScrollPane cardsScrollPane;
     private final JLabel emptyStateLabel = new JLabel("Choose a location and click search to see local events.", SwingConstants.CENTER);
-    private static final double DEFAULT_RADIUS_KM = 1000.0;
+    private static final double DEFAULT_RADIUS_KM = 50.0;
     private ViewManagerModel viewManagerModel;
-
-    private boolean isUpdatingFromOtherView = false;
 
     public DisplayLocalEventsView(DisplayLocalEventsViewModel viewModel) {
         this.viewModel = viewModel;
-
         this.viewModel.addPropertyChangeListener(this);
 
         setLayout(new BorderLayout());
@@ -64,10 +61,8 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         renderEmptyState();
 
         searchButton.addActionListener(e -> onSearch());
-
         sortBox.addActionListener(e -> renderEvents());
-        calendarButton.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Calendar UI not implemented yet."));
+        calendarButton.addActionListener(e -> navigateToCalendar());
         logoutButton.addActionListener(e ->
                 JOptionPane.showMessageDialog(this, "Logout / Login UI not implemented yet."));
     }
@@ -84,183 +79,10 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         this.controller = controller;
     }
 
-    /**
-     * Enhanced propertyChange method to handle different types of property changes.
-     * This method will be called when ANY view fires a property change event through the shared ViewModel.
-     */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        String propertyName = evt.getPropertyName();
-
-
-        if (isUpdatingFromOtherView) {
-            return;
-        }
-
-        try {
-            isUpdatingFromOtherView = true;
-
-            switch (propertyName) {
-                case DisplayLocalEventsViewModel.PROPERTY_STATE:
-                    renderEvents();
-                    break;
-
-                case DisplayLocalEventsViewModel.PROPERTY_EVENT_CARDS:
-                    renderEvents();
-                    break;
-
-                case DisplayLocalEventsViewModel.PROPERTY_SEARCH_PARAMS:
-                    handleSearchParamsUpdate();
-                    break;
-
-                case DisplayLocalEventsViewModel.PROPERTY_CATEGORY:
-                    String newCategory = viewModel.getLastSearchCategory();
-                    if (newCategory != null && !newCategory.isEmpty()) {
-                        categoryBox.setSelectedItem(newCategory);
-                    }
-                    break;
-
-                case DisplayLocalEventsViewModel.PROPERTY_LOCATION:
-                    String newLocation = viewModel.getLastSearchLocation();
-                    updateLocationUI(newLocation);
-                    break;
-
-                case DisplayLocalEventsViewModel.PROPERTY_ERROR:
-                    renderEvents();
-                    if (viewModel.hasError()) {
-                        showErrorNotification(viewModel.getError());
-                    }
-                    break;
-
-                case DisplayLocalEventsViewModel.PROPERTY_LOADING:
-                    boolean isLoading = viewModel.isLoading();
-                    updateLoadingState(isLoading);
-                    break;
-
-                case DisplayLocalEventsViewModel.PROPERTY_MESSAGE:
-                    String message = viewModel.getMessage();
-                    if (message != null && !message.isEmpty()) {
-                        showInfoNotification(message);
-                    }
-                    break;
-
-                default:
-                    renderEvents();
-                    break;
-            }
-        } finally {
-            isUpdatingFromOtherView = false;
-        }
-    }
-
-    /**
-     * Handle search parameters update from other views
-     */
-    private void handleSearchParamsUpdate() {
-        String location = viewModel.getLastSearchLocation();
-        String category = viewModel.getLastSearchCategory();
-
-        if (location != null && !location.isEmpty()) {
-            updateLocationUI(location);
-        }
-
-        if (category != null && !category.isEmpty()) {
-            categoryBox.setSelectedItem(category);
-        }
-
-    }
-
-    /**
-     * Update location UI based on location string
-     */
-    private void updateLocationUI(String location) {
-        if (location == null) return;
-
-        if (location.contains("Montreal")) {
-            cityBox.setSelectedItem("Montreal");
-        } else if (location.contains("New York")) {
-            cityBox.setSelectedItem("New York");
-        } else if (location.contains("Toronto")) {
-            cityBox.setSelectedItem("Toronto");
-        }
-    }
-
-    /**
-     * Update UI to show loading state
-     */
-    private void updateLoadingState(boolean isLoading) {
-        searchButton.setEnabled(!isLoading);
-        categoryBox.setEnabled(!isLoading);
-        sortBox.setEnabled(!isLoading);
-        cityBox.setEnabled(!isLoading);
-
-        if (isLoading) {
-            cardsContainer.removeAll();
-            cardsContainer.setLayout(new BorderLayout());
-            JLabel loadingLabel = new JLabel("Loading events...", SwingConstants.CENTER);
-            loadingLabel.setFont(loadingLabel.getFont().deriveFont(Font.PLAIN, 14f));
-            loadingLabel.setForeground(new Color(100, 100, 100));
-            cardsContainer.add(loadingLabel, BorderLayout.CENTER);
-            cardsContainer.revalidate();
-            cardsContainer.repaint();
-        }
-    }
-
-    /**
-     * Show error notification to user
-     */
-    private void showErrorNotification(String error) {
-        System.err.println("Error in DisplayLocalEventsView: " + error);
-        // You can replace this with a more sophisticated notification system
-        // For example: show a toast notification or status bar message
-    }
-
-    /**
-     * Show info notification to user
-     */
-    private void showInfoNotification(String message) {
-        System.out.println("Info in DisplayLocalEventsView: " + message);
-        // You can replace this with a more sophisticated notification system
-    }
-
-    /**
-     * Public method to allow other views to trigger updates
-     * Other views can call this to update this view
-     */
-    public void updateFromOtherView(String location, String category, double radius) {
-        if (controller != null) {
-            Location loc = parseLocation(location);
-            controller.display(loc, radius, category);
-
-            // Update the ViewModel which will trigger propertyChange
-            viewModel.updateSearchParams(location, category, radius);
-        }
-    }
-
-    /**
-     * Helper method to parse location string into Location object
-     */
-    private Location parseLocation(String locationStr) {
-        if (locationStr == null) {
-            return getCurrentLocation();
-        }
-
-        if (locationStr.contains("Montreal")) {
-            return new Location("Montreal, QC", 45.5019, -73.5674);
-        } else if (locationStr.contains("New York")) {
-            return new Location("New York, NY", 40.7128, -74.0060);
-        } else {
-            return new Location("Toronto, ON", 43.6532, -79.3832);
-        }
-    }
-
-    /**
-     * Method to connect this view with other views
-     * Call this during app initialization
-     */
-    public void connectToOtherViews(PropertyChangeListener... otherViews) {
-        for (PropertyChangeListener listener : otherViews) {
-            viewModel.addPropertyChangeListener(listener);
+        if ("state".equals(evt.getPropertyName())) {
+            renderEvents();
         }
     }
 
@@ -272,12 +94,6 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         if (controller != null && location != null) {
             String category = (String) categoryBox.getSelectedItem();
             controller.display(location, radiusKm, category);
-
-            viewModel.updateSearchParams(
-                    location.getAddress(),
-                    category != null ? category : "ALL",
-                    radiusKm
-            );
         }
     }
 
@@ -406,17 +222,7 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         }
 
         String category = (String) categoryBox.getSelectedItem();
-
-        // Set loading state
-        viewModel.setLoading(true);
-
         controller.display(userLoc, DEFAULT_RADIUS_KM, category);
-
-        viewModel.updateSearchParams(
-                selectedCity,
-                category != null ? category : "ALL",
-                DEFAULT_RADIUS_KM
-        );
     }
 
     private void renderEmptyState() {
@@ -431,9 +237,6 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
     public void renderEvents() {
         cardsContainer.removeAll();
-
-        // Turn off loading state
-        viewModel.setLoading(false);
 
         if (viewModel.hasError()) {
             cardsContainer.setLayout(new BorderLayout());
@@ -563,5 +366,12 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
     public void setSearchBarController(SearchController controller) {
         this.searchBarView.setSearchController(controller);
+    }
+
+    private void navigateToCalendar() {
+        if (viewManagerModel != null) {
+            viewManagerModel.setState("calendar view");
+            viewManagerModel.firePropertyChange();
+        }
     }
 }

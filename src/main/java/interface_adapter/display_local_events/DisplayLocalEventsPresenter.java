@@ -48,6 +48,7 @@ public class DisplayLocalEventsPresenter implements DisplayLocalEventsOutputBoun
         viewModel.setMessage(outputData.getMessage());
         viewModel.setError("");
 
+
         viewManagerModel.setState(viewModel.getViewName());
         viewManagerModel.firePropertyChange();
     }
@@ -57,6 +58,7 @@ public class DisplayLocalEventsPresenter implements DisplayLocalEventsOutputBoun
         viewModel.setEventCards(List.of());
         viewModel.setMessage("");
         viewModel.setError(errorMessage != null ? errorMessage : "Unknown error");
+
 
         viewManagerModel.setState(viewModel.getViewName());
         viewManagerModel.firePropertyChange();
