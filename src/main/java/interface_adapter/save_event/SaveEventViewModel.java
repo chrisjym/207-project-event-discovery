@@ -5,7 +5,7 @@ import interface_adapter.signup.SignupState;
 
 public class SaveEventViewModel extends ViewModel<SaveEventState> {
     public SaveEventViewModel() {
-        super("save event");
+        super("save events");
         setState(new SaveEventState());
     }
 }

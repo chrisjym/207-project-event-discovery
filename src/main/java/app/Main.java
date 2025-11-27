@@ -18,16 +18,16 @@ public class Main {
                 .addLoggedInView()
                 .addCalendarViews()
                 .addEventDescriptionView()       // NEW
-                .addDisplayLocalEventsView()
                 .addSaveEventView()
+                .addDisplayLocalEventsView()
                 .addEventSearchView()
                 .addSignupUseCase()
                 .addLoginUseCase()
                 .addChangePasswordUseCase()
                 .addLogoutUseCase()
                 .addCalendarFlowUseCase()
-                .addEventDescriptionUseCase()    // NEW
                 .addSaveEventUseCase()
+                .addEventDescriptionUseCase()    // NEW
                 .addDisplayLocalEventsUseCase()
                 .addSearchEventByNameUseCase()
                 .build();

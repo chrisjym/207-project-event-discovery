@@ -19,7 +19,7 @@ public class SaveEventPresenter implements SaveEventOutputBoundary {
         SaveEventState currentState = saveEventViewModel.getState();
         currentState.addSavedEvent(outputData.getEvent());
         saveEventViewModel.setState(currentState);
-        saveEventViewModel.firePropertyChange();
+        saveEventViewModel.firePropertyChange("event");
     }
 
     @Override
@@ -27,7 +27,7 @@ public class SaveEventPresenter implements SaveEventOutputBoundary {
         SaveEventState currentState = saveEventViewModel.getState();
         currentState.addSavedEvent(null);
         saveEventViewModel.setState(currentState);
-        saveEventViewModel.firePropertyChange();
+        saveEventViewModel.firePropertyChange("error");
     }
 
     @Override

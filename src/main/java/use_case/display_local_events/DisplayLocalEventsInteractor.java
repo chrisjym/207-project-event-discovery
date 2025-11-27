@@ -83,6 +83,11 @@ public class DisplayLocalEventsInteractor implements DisplayLocalEventsInputBoun
         }
     }
 
+    @Override
+    public void switchToSaveView() {
+        outputBoundary.switchToSaveView();
+    }
+
     /**
      * Calculates distances for each event from the user's location
      */

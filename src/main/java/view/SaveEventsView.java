@@ -80,6 +80,8 @@ public class SaveEventsView extends JPanel implements PropertyChangeListener {
 
     }
 
+
+
     public void refreshEventsList() {
         eventsContainer.removeAll();
 

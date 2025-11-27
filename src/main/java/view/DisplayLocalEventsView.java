@@ -10,6 +10,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -170,6 +172,13 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         styleSideButton(calendarButton);
         styleSideButton(logoutButton);
         styleSideButton(savedEventsButton);
+
+        savedEventsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.switchToSaveView();
+            }
+        });
 
         sideBar.add(calendarButton);
         sideBar.add(Box.createVerticalStrut(10));

@@ -41,4 +41,8 @@ public class DisplayLocalEventsController {
 
         interactor.execute(inputData);
     }
+
+    public void switchToSaveView() {
+        interactor.switchToSaveView();
+    }
 }

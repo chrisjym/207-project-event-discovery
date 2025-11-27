@@ -2,6 +2,8 @@ package interface_adapter.display_local_events;
 
 import entity.Event;
 import interface_adapter.ViewManagerModel;
+import interface_adapter.save_event.SaveEventController;
+import interface_adapter.save_event.SaveEventViewModel;
 import use_case.display_local_events.DisplayLocalEventsOutputBoundary;
 import use_case.display_local_events.DisplayLocalEventsOutputData;
 import java.time.format.DateTimeFormatter;
@@ -12,12 +14,15 @@ import java.util.Map;
 public class DisplayLocalEventsPresenter implements DisplayLocalEventsOutputBoundary {
     private final DisplayLocalEventsViewModel viewModel;
     private final ViewManagerModel viewManagerModel;
+    private final SaveEventViewModel saveEventViewModel;
     private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public DisplayLocalEventsPresenter(DisplayLocalEventsViewModel viewModel,
-                                       ViewManagerModel viewManagerModel) {
+                                       ViewManagerModel viewManagerModel,
+                                       SaveEventViewModel saveEventViewModel) {
         this.viewModel = viewModel;
         this.viewManagerModel = viewManagerModel;
+        this.saveEventViewModel = saveEventViewModel;
     }
 
     @Override
@@ -63,4 +68,10 @@ public class DisplayLocalEventsPresenter implements DisplayLocalEventsOutputBoun
         viewManagerModel.setState(viewModel.getViewName());
         viewManagerModel.firePropertyChange();
     }
+
+    public void switchToSaveView() {
+        viewManagerModel.setState(saveEventViewModel.getViewName());
+        viewManagerModel.firePropertyChange();
+    }
+
 }
