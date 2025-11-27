@@ -1,105 +1,58 @@
 package data_access;
 
-import entity.Event;
-import entity.EventCategory;
-import entity.Location;
-import okhttp3.*;
-import org.json.*;
-
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+import java.time.LocalDate;
 
-public class EventDataAccessObject {
+import entity.EventCategory;
+import okhttp3.*;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 
-    private static final String API_KEY = "YOUR_API_KEY"; // Replace with actual API key
+import entity.Event;
+import entity.Location;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import use_case.calendarFlow.CalendarFlowDataAccessInterface;
+
+public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInterface{
     private static final String BASE_URL = "https://app.ticketmaster.com/discovery/v2";
     private static final String EVENTS_ENDPOINT = "/events.json";
+    private static final String API_KEY = "YOUR_API_KEY_HERE";
+    private final OkHttpClient client = new OkHttpClient();
 
-    private final OkHttpClient client;
-
-    public EventDataAccessObject() {
-        this.client = new OkHttpClient();
-    }
-
+//    public CalendarFlowDataAccessObject() {
+//    }
     /**
-     * Get events near a location within a radius
+     * Search events by date
+     * @param date the selected specific date
+     * @param location the user's location
+     * @param radiusKm the search radius in kilometers
      */
-    public List<Event> getEventsByLocation(Location location, double radiusKm) {
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL + EVENTS_ENDPOINT).newBuilder();
-        urlBuilder.addQueryParameter("apikey", API_KEY);
-        urlBuilder.addQueryParameter("latlong",
-                String.format("%.6f,%.6f", location.getLatitude(), location.getLongitude()));
-        urlBuilder.addQueryParameter("radius", String.valueOf((int) radiusKm));
-        urlBuilder.addQueryParameter("unit", "km");
-        urlBuilder.addQueryParameter("size", "50");
-        urlBuilder.addQueryParameter("sort", "distance,asc");
+    @Override
+    public List<Event> getEventsByDate(LocalDate date, Location location, double radiusKm) {
+        List<Event> events = new ArrayList<>();
 
-        return fetchEvents(urlBuilder.build().toString());
-    }
+        HttpUrl.Builder urlBuilder = HttpUrl
+                .parse(BASE_URL + EVENTS_ENDPOINT)
+                .newBuilder()
+                .addQueryParameter("apikey", API_KEY);
 
-    /**
-     * Get events filtered by category
-     */
-    public List<Event> getEventsByCategory(Location location, double radiusKm, EventCategory category) {
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL + EVENTS_ENDPOINT).newBuilder();
-        urlBuilder.addQueryParameter("apikey", API_KEY);
-        urlBuilder.addQueryParameter("latlong",
-                String.format("%.6f,%.6f", location.getLatitude(), location.getLongitude()));
-        urlBuilder.addQueryParameter("radius", String.valueOf((int) radiusKm));
-        urlBuilder.addQueryParameter("unit", "km");
-        urlBuilder.addQueryParameter("size", "50");
-        urlBuilder.addQueryParameter("sort", "distance,asc");
+        ZonedDateTime startZdt = date.atStartOfDay(ZoneOffset.UTC);//LocalDate with time 00:00
+        ZonedDateTime endZdt = date.atTime(23, 59, 59).atZone(ZoneOffset.UTC);//LocalDate with time 23:59
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;//a converter that convert time in timezone to string
 
-        String classificationName = mapCategoryToTicketmaster(category);
-        if (classificationName != null) {
-            urlBuilder.addQueryParameter("classificationName", classificationName);
-        }
-
-        return fetchEvents(urlBuilder.build().toString());
-    }
-
-    /**
-     * Search events by name/keyword
-     */
-    public List<Event> searchEventsByName(String keyword, Location location, double radiusKm) {
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL + EVENTS_ENDPOINT).newBuilder();
-        urlBuilder.addQueryParameter("apikey", API_KEY);
-        urlBuilder.addQueryParameter("keyword", keyword);
+        urlBuilder.addQueryParameter("startDateTime", formatter.format(startZdt));
+        urlBuilder.addQueryParameter("endDateTime", formatter.format(endZdt));
         urlBuilder.addQueryParameter("latlong",
                 String.format("%.6f,%.6f", location.getLatitude(), location.getLongitude()));
         urlBuilder.addQueryParameter("radius", String.valueOf((int) radiusKm));
         urlBuilder.addQueryParameter("unit", "km");
         urlBuilder.addQueryParameter("size", "50");
 
-        return fetchEvents(urlBuilder.build().toString());
-    }
-
-    /**
-     * Get a specific event by ID
-     */
-    public Event getEventById(String eventId) {
-        String url = BASE_URL + "/events/" + eventId + ".json?apikey=" + API_KEY;
-
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                return null;
-            }
-
-            String jsonResponse = response.body().string();
-            JSONObject eventJson = new JSONObject(jsonResponse);
-
-            return parseEvent(eventJson);
-
-        } catch (IOException e) {
-            return null;
-        }
+        String url = urlBuilder.build().toString();
+        return fetchEvents(url);
     }
 
     private List<Event> fetchEvents(String url) {
@@ -109,7 +62,7 @@ public class EventDataAccessObject {
                 .url(url)
                 .build();
 
-        try (Response response = client.newCall(request).execute()){
+        try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 System.err.println("Failed to fetch events: " + response.code());
                 return events;
@@ -171,7 +124,7 @@ public class EventDataAccessObject {
 
             String imageUrl = extractImageUrl(eventJson);
 
-            return new Event(id, name, description, location.getAddress(), category, location, startTime, imageUrl);
+            return new Event(id, name, description,location.getAddress() ,category, location, startTime, imageUrl);
 
         } catch (Exception e) {
             System.err.println("Error parsing event: " + e.getMessage());
@@ -232,7 +185,6 @@ public class EventDataAccessObject {
 
         return EventCategory.MISCELLANEOUS;
     }
-
     private Location extractLocation(JSONObject eventJson) {
         try {
             if (!eventJson.has("_embedded")) {

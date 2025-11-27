@@ -26,7 +26,7 @@ class EventDescriptionInteractorTest {
 
     @Test
     void successPath_eventFoundAndDistanceComputed() {
-        // Arrange
+        // arrange
         InMemoryEventDataAccessObject eventDAO = new InMemoryEventDataAccessObject();
         Location loc = new Location(43.0, -79.0);
         Event event = new Event(

@@ -38,7 +38,7 @@ public class SearchEventByNamePresenter implements SearchEventByNameOutputBounda
 
     @Override
     public void switchToDashboardView() {
-        viewManagerModel.setState("search"); // or whatever the dashboard view name is
+        viewManagerModel.setState("display local events");
         viewManagerModel.firePropertyChange();
     }
 }
