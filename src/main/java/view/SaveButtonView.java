@@ -16,6 +16,7 @@ public class SaveButtonView extends JPanel {
     private JButton saveButton = null;
     private Event event;
     private SaveEventController saveButtonController = null;
+    private Timer resetTimer;
 
 
     public SaveButtonView() {
@@ -81,15 +82,40 @@ public class SaveButtonView extends JPanel {
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Got here");
                 if (saveButtonController != null && event != null) {
                     System.out.println("YIPPEE");
                     saveButtonController.saveEvent(event);
                     saveButton.setText("Saved");
                     saveButton.setEnabled(false);
+
+                    if (resetTimer != null && resetTimer.isRunning()) {
+                        resetTimer.stop();
+                    }
+
+                    resetTimer = new Timer(10000, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            resetButtonState();
+                        }
+                    });
+                    resetTimer.setRepeats(false); // Only run once
+                    resetTimer.start();
+
                 }
             }
         });
+    }
+
+    private void resetButtonState() {
+        if (saveButton != null) {
+            saveButton.setText("Save Event");
+            saveButton.setEnabled(true);
+
+            Color base = new Color(59, 130, 246);
+            saveButton.setForeground(base);
+            saveButton.setBackground(Color.WHITE);
+            saveButton.setBorder(BorderFactory.createLineBorder(base, 3));
+        }
     }
 
     public void setEvent(Event event) {

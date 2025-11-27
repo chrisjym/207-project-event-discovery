@@ -10,6 +10,10 @@ import java.util.List;
  */
 public class DisplayLocalEventsViewModel {
 
+    public DisplayLocalEventsViewModel()  {
+
+    }
+
     /**
      * Represents a single event card to be displayed in the UI.
      * This class contains UI-friendly data only (mostly Strings),

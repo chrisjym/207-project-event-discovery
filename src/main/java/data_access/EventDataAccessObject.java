@@ -14,7 +14,7 @@ import java.util.List;
 
 public class EventDataAccessObject {
 
-    private static final String API_KEY = "YOUR_API_KEY"; // Replace with actual API key
+    private static final String API_KEY = "oL2pW4zAlAZvhBAhPNi5mNYvS7OsBM9J"; // Replace with actual API key
     private static final String BASE_URL = "https://app.ticketmaster.com/discovery/v2";
     private static final String EVENTS_ENDPOINT = "/events.json";
 

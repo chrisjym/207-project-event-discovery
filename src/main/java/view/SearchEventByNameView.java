@@ -1,6 +1,8 @@
 package view;
 
 import javax.swing.*;
+
+import interface_adapter.save_event.SaveEventController;
 import interface_adapter.search_event_by_name.SearchEventByNameController;
 import interface_adapter.search_event_by_name.SearchEventByNameViewModel;
 import entity.Event;
@@ -27,6 +29,7 @@ public class SearchEventByNameView extends JPanel implements PropertyChangeListe
     private JTextArea descArea;
     private JPanel imagePanel;
     private SaveButtonView saveButtonView;
+    private SaveEventController saveEventController;
 
     public SearchEventByNameView(SearchEventByNameViewModel searchEventByNameViewModel) {
         this.searchEventByNameViewModel = searchEventByNameViewModel;
@@ -36,6 +39,7 @@ public class SearchEventByNameView extends JPanel implements PropertyChangeListe
         JPanel detailsPanel = createDetailsPanel();
         add(detailsPanel, BorderLayout.CENTER);
 
+        imagePanel = createImagePanel();
         imagePanel = createImagePanel();
         add(imagePanel, BorderLayout.EAST);
 
@@ -112,7 +116,6 @@ public class SearchEventByNameView extends JPanel implements PropertyChangeListe
 
         saveButtonView = new SaveButtonView();
         saveButtonView.setAlignmentX(Component.LEFT_ALIGNMENT);
-        saveButtonView.setEvent(searchEventByNameViewModel.getEvent());
         mainPanel.add(saveButtonView);
 
         JScrollPane scrollPane = new JScrollPane(mainPanel);
@@ -203,6 +206,10 @@ public class SearchEventByNameView extends JPanel implements PropertyChangeListe
             descArea.setText(desc.isEmpty() ? "No description available" : desc);
 
             updateImagePanel(event.getImageUrl());
+
+            saveButtonView.setEvent(event);
+            saveButtonView.setSaveEventController(saveEventController);
+
         }
     }
 
@@ -210,8 +217,16 @@ public class SearchEventByNameView extends JPanel implements PropertyChangeListe
         return viewName;
     }
 
+
+
     public void setEventController(SearchEventByNameController controller) {
         this.eventController = controller;
     }
+
+    public void setSaveButtonController(SaveEventController eventController) {
+        this.saveButtonView.setSaveEventController(eventController);
+        this.saveEventController = eventController;
+    }
+
 }
 

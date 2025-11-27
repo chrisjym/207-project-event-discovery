@@ -91,6 +91,7 @@ public class AppBuilder {
 
 
     final EventDataAccessInterface eventDataAccessObject = new InMemoryEventDataAccessObject();
+    final FileSavedEventsDataAccessObject savedEventsDAO = new FileSavedEventsDataAccessObject();
 
     private final JPanel cardPanel = new JPanel();
     private final CardLayout cardLayout = new CardLayout();
@@ -120,6 +121,8 @@ public class AppBuilder {
     private SaveEventViewModel saveEventViewModel;
     private SaveEventsView saveEventsView;
     private SaveButtonView saveButtonView;
+    private SaveEventInteractor saveEventInteractor;
+    private SaveEventController saveEventController;
 
 
     private CalendarFlowViewModel calendarFlowViewModel;
@@ -201,18 +204,20 @@ public class AppBuilder {
                 viewManagerModel
         );
 
-        final SaveEventInputBoundary saveEventInteractor = new SaveEventInteractor(
+        // Create and store the interactor instance
+        this.saveEventInteractor = new SaveEventInteractor(
                 saveEventPresenter,
                 savedEventsDAO,
                 userDataAccessObject
         );
 
-        final SaveEventController saveEventController = new SaveEventController(saveEventInteractor);
+        // Create and store the controller instance
+        this.saveEventController = new SaveEventController(saveEventInteractor);
 
         // Set the controller and interactor for the views
         if (saveEventsView != null) {
             saveEventsView.setSaveEventController(saveEventController);
-
+            saveEventsView.setSaveEventInteractor(saveEventInteractor);
         }
 
         if (saveButtonView != null) {
@@ -237,6 +242,9 @@ public class AppBuilder {
 
         final SearchEventByNameController controller = new SearchEventByNameController(interactor);
         searchEventView.setEventController(controller);
+
+        // Use the shared controller instead of creating a new one
+        searchEventView.setSaveButtonController(saveEventController);
 
         return this;
     }

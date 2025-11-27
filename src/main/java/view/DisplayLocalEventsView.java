@@ -79,9 +79,6 @@ public class DisplayLocalEventsView extends JPanel {
 
     public void setController(DisplayLocalEventsController controller) {
         this.controller = controller;
-        searchButton.addActionListener(e -> onSearch());
-        savedEventsButton.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "TODO: go to Saved Events view"));
     }
 
     private JPanel buildTopBar() {
@@ -265,7 +262,6 @@ public class DisplayLocalEventsView extends JPanel {
         if (selectedCity == null) {
             return new Location("Toronto, ON", 43.6532, -79.3832);
         }
-
         switch (selectedCity) {
             case "Montreal":
                 return new Location("Montreal, QC", 45.5019, -73.5674);
