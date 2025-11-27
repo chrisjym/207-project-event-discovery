@@ -1,13 +1,24 @@
 package interface_adapter.display_local_events;
 
 import interface_adapter.ViewModel;
-
 import java.time.LocalDate;
 import java.util.List;
+
 
 public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsState> {
 
     public static final String VIEW_NAME = "display local events";
+
+
+    public static final String PROPERTY_STATE = "state";
+    public static final String PROPERTY_EVENT_CARDS = "eventCards";
+    public static final String PROPERTY_SEARCH_PARAMS = "searchParamsUpdated";
+    public static final String PROPERTY_CATEGORY = "categoryChanged";
+    public static final String PROPERTY_LOCATION = "locationChanged";
+    public static final String PROPERTY_ERROR = "error";
+    public static final String PROPERTY_LOADING = "loading";
+    public static final String PROPERTY_MESSAGE = "message";
+
     private LocalDate selectedDateFromCalendar;
 
     public DisplayLocalEventsViewModel() {
@@ -50,7 +61,8 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
 
     public void setEventCards(List<EventCard> eventCards) {
         this.getState().setEventCards(eventCards);
-        this.firePropertyChange();
+        this.firePropertyChange(PROPERTY_EVENT_CARDS);
+        this.firePropertyChange(PROPERTY_STATE);
     }
 
     public String getMessage() {
@@ -59,7 +71,8 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
 
     public void setMessage(String message) {
         this.getState().setMessage(message);
-        this.firePropertyChange();
+        this.firePropertyChange(PROPERTY_MESSAGE);
+        this.firePropertyChange(PROPERTY_STATE);
     }
 
     public String getError() {
@@ -68,7 +81,8 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
 
     public void setError(String error) {
         this.getState().setError(error);
-        this.firePropertyChange();
+        this.firePropertyChange(PROPERTY_ERROR);
+        this.firePropertyChange(PROPERTY_STATE);
     }
 
     public boolean hasEvents() {
@@ -79,11 +93,32 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
         return this.getState().hasError();
     }
 
+
+    public boolean isLoading() {
+        return this.getState().isLoading();
+    }
+
+    public void setLoading(boolean loading) {
+        this.getState().setLoading(loading);
+        this.firePropertyChange(PROPERTY_LOADING);
+    }
+
     public void updateSearchParams(String location, String category, double radius) {
+        String oldLocation = this.getState().getLastSearchLocation();
+        String oldCategory = this.getState().getLastSearchCategory();
+
         this.getState().setLastSearchLocation(location);
         this.getState().setLastSearchCategory(category);
         this.getState().setLastSearchRadius(radius);
-        this.firePropertyChange("searchParamsUpdated");
+
+        if (!oldLocation.equals(location)) {
+            this.firePropertyChange(PROPERTY_LOCATION);
+        }
+        if (!oldCategory.equals(category)) {
+            this.firePropertyChange(PROPERTY_CATEGORY);
+        }
+
+        this.firePropertyChange(PROPERTY_SEARCH_PARAMS);
     }
 
     public String getLastSearchLocation() {
@@ -96,5 +131,25 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
 
     public double getLastSearchRadius() {
         return this.getState().getLastSearchRadius();
+    }
+
+    public LocalDate getSelectedDateFromCalendar() {
+        return selectedDateFromCalendar;
+    }
+
+    public void setSelectedDateFromCalendar(LocalDate date) {
+        this.selectedDateFromCalendar = date;
+        this.firePropertyChange("selectedDate");
+    }
+
+    public void clearEvents() {
+        this.getState().setEventCards(List.of());
+        this.getState().setError("");
+        this.getState().setMessage("");
+        this.firePropertyChange(PROPERTY_STATE);
+    }
+
+    public void refresh() {
+        this.firePropertyChange(PROPERTY_STATE);
     }
 }
