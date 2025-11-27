@@ -1,22 +1,24 @@
 package app;
 
-import javax.swing.*;
+import javax.swing.JFrame;
 
 public class Main {
 
     /**
-     * Main gateway into application
+     * Main gateway into application.
      * Running this file will begin the application
      * @param args input arguments to the main method
-
+     *
      **/
+
     public static void main(String[] args) {
-        AppBuilder appBuilder = new AppBuilder();
-        JFrame application = appBuilder
+        final AppBuilder appBuilder = new AppBuilder();
+        final JFrame application = appBuilder
                 .addLoginView()
                 .addSignupView()
                 .addLoggedInView()
-                .addEventDescriptionView()       // NEW
+                .addEventDescriptionView()
+                .addEventDescriptionView()
                 .addDisplayLocalEventsView()
                 .addSaveEventView()
                 .addEventSearchView()
@@ -24,7 +26,8 @@ public class Main {
                 .addLoginUseCase()
                 .addChangePasswordUseCase()
                 .addLogoutUseCase()
-                .addEventDescriptionUseCase()    // NEW
+                .addEventDescriptionUseCase()
+                .addEventDescriptionUseCase()
                 .addSaveEventUseCase()
                 .addDisplayLocalEventsUseCase()
                 .build();
