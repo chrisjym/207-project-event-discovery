@@ -21,6 +21,9 @@ public class DisplayLocalEventsView extends JPanel {
     private DisplayLocalEventsController controller;
     private final DisplayLocalEventsViewModel viewModel;
 
+    private interface_adapter.ViewManagerModel viewManagerModel;
+    private CalendarView calendarView;
+
     private final String viewName = "display local events";
 
     private final JLabel appNameLabel = new JLabel("Dashboard");
@@ -67,7 +70,19 @@ public class DisplayLocalEventsView extends JPanel {
         sortBox.addActionListener(e -> renderEvents());
 
         calendarButton.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Calendar UI not implemented yet."));
+                {
+                    Location userLoc = getCurrentLocation();
+                    if (calendarView != null) {
+                        calendarView.setUserLocation(userLoc);
+                        calendarView.setSearchRadiusKm(DEFAULT_RADIUS_KM);
+                    }
+
+                    if (viewManagerModel != null) {
+                        viewManagerModel.setState("calendar view");
+                        viewManagerModel.firePropertyChange();
+                    }
+                }
+        );
         logoutButton.addActionListener(e ->
                 JOptionPane.showMessageDialog(this, "Logout / Login UI not implemented yet."));
     }
@@ -79,6 +94,14 @@ public class DisplayLocalEventsView extends JPanel {
     public void setController(DisplayLocalEventsController controller) {
         this.controller = controller;
         searchButton.addActionListener(e -> onSearch());
+    }
+
+    public void setViewManagerModel(interface_adapter.ViewManagerModel viewManagerModel) {
+        this.viewManagerModel = viewManagerModel;
+    }
+
+    public void setCalendarView(CalendarView calendarView) {
+        this.calendarView = calendarView;
     }
 
     private JPanel buildTopBar() {

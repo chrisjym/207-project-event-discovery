@@ -173,6 +173,8 @@ public class AppBuilder {
     public AppBuilder addDisplayLocalEventsView() {
         displayLocalEventsViewModel = new DisplayLocalEventsViewModel();
         displayLocalEventsView = new DisplayLocalEventsView(displayLocalEventsViewModel);
+        displayLocalEventsView.setViewManagerModel(viewManagerModel);
+        displayLocalEventsView.setCalendarView(calendarView);
         cardPanel.add(displayLocalEventsView, displayLocalEventsView.getViewName());
         return this;
     }
