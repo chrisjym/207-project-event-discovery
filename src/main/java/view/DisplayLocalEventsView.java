@@ -38,6 +38,7 @@ public class DisplayLocalEventsView extends JPanel {
 
     private final JButton calendarButton = new JButton("Calendar");
     private final JButton logoutButton = new JButton("Logout");
+    private final JButton savedEventsButton = new JButton("Saved Events");
 
     private final JPanel cardsContainer = new JPanel();
     private final JScrollPane cardsScrollPane;
@@ -79,6 +80,8 @@ public class DisplayLocalEventsView extends JPanel {
     public void setController(DisplayLocalEventsController controller) {
         this.controller = controller;
         searchButton.addActionListener(e -> onSearch());
+        savedEventsButton.addActionListener(e ->
+                JOptionPane.showMessageDialog(this, "TODO: go to Saved Events view"));
     }
 
     private JPanel buildTopBar() {
@@ -149,10 +152,13 @@ public class DisplayLocalEventsView extends JPanel {
 
         styleSideButton(calendarButton);
         styleSideButton(logoutButton);
+        styleSideButton(savedEventsButton);
 
         sideBar.add(calendarButton);
         sideBar.add(Box.createVerticalStrut(10));
         sideBar.add(logoutButton);
+        sideBar.add(Box.createVerticalStrut(10));
+        sideBar.add(savedEventsButton);
         sideBar.add(Box.createVerticalGlue());
 
         return sideBar;
