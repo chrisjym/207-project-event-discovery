@@ -1,8 +1,8 @@
 package view;
 
 import entity.Location;
-import interface_adapter.displaylocalevents.DisplayLocalEventsController;
-import interface_adapter.displaylocalevents.DisplayLocalEventsViewModel;
+import interface_adapter.display_local_events.DisplayLocalEventsController;
+import interface_adapter.display_local_events.DisplayLocalEventsViewModel;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

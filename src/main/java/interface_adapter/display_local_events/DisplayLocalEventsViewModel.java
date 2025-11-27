@@ -1,4 +1,4 @@
-package interface_adapter.displaylocalevents;
+package interface_adapter.display_local_events;
 
 import java.util.ArrayList;
 import java.util.List;

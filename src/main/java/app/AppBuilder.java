@@ -37,9 +37,9 @@ import interface_adapter.save_event.SaveEventController;
 import interface_adapter.save_event.SaveEventPresenter;
 import interface_adapter.save_event.SaveEventViewModel;
 
-import interface_adapter.displaylocalevents.DisplayLocalEventsController;
-import interface_adapter.displaylocalevents.DisplayLocalEventsPresenter;
-import interface_adapter.displaylocalevents.DisplayLocalEventsViewModel;
+import interface_adapter.display_local_events.DisplayLocalEventsController;
+import interface_adapter.display_local_events.DisplayLocalEventsPresenter;
+import interface_adapter.display_local_events.DisplayLocalEventsViewModel;
 
 import use_case.change_password.ChangePasswordInputBoundary;
 import use_case.change_password.ChangePasswordInteractor;
@@ -80,7 +80,7 @@ public class AppBuilder {
     private EventDescriptionViewModel eventDescriptionViewModel;
     private EventDescriptionView eventDescriptionView;
 
-    // temporary Event DAO (for now, in-memory)
+
     final EventDataAccessInterface eventDataAccessObject = new InMemoryEventDataAccessObject();
 
     private final JPanel cardPanel = new JPanel();
