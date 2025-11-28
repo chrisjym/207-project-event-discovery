@@ -318,7 +318,7 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         sideBar.setPreferredSize(new Dimension(130, 0));
 
         styleSideButton(calendarButton, "📅 Calendar");
-        styleSideButton(savedEventsButton, "❤️ Saved");
+        styleSideButton(savedEventsButton, "❤ Saved");
         styleSideButton(logoutButton, "🚪 Logout");
 
         sideBar.add(calendarButton);
