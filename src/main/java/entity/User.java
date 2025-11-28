@@ -1,12 +1,15 @@
 package entity;
 
 /**
- * A simple entity representing a user. Users have a username and password..
+ * a simple entity representing a user.
+ * users have a username, password, and optionally a saved location.
  */
 public class User {
 
     private final String name;
     private final String password;
+    private Location location;  // User's saved location for distance calculations
+    private String address;     // Human-readable address string
 
     /**
      * Creates a new user with the given non-empty name and non-empty password.
@@ -23,6 +26,21 @@ public class User {
         }
         this.name = name;
         this.password = password;
+        this.location = null;
+        this.address = "";
+    }
+
+    /**
+     * Creates a new user with location information.
+     * @param name the username
+     * @param password the password
+     * @param address the user's address string
+     * @param location the user's location coordinates
+     */
+    public User(String name, String password, String address, Location location) {
+        this(name, password);
+        this.address = address != null ? address : "";
+        this.location = location;
     }
 
     public String getName() {
@@ -33,4 +51,26 @@ public class User {
         return password;
     }
 
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address != null ? address : "";
+    }
+
+    /**
+     * Check if user has a saved location.
+     */
+    public boolean hasLocation() {
+        return location != null;
+    }
 }

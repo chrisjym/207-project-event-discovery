@@ -75,6 +75,16 @@ import use_case.display_local_events.DisplayLocalEventsInputBoundary;
 import use_case.display_local_events.DisplayLocalEventsInteractor;
 import use_case.display_local_events.DisplayLocalEventsOutputBoundary;
 
+
+import data_access.GeocodingService;
+import data_access.GeocodingDataAccessInterface;
+import interface_adapter.update_location.UpdateLocationController;
+import interface_adapter.update_location.UpdateLocationPresenter;
+import interface_adapter.update_location.UpdateLocationViewModel;
+import use_case.update_location.UpdateLocationInputBoundary;
+import use_case.update_location.UpdateLocationInteractor;
+import use_case.update_location.UpdateLocationOutputBoundary;
+
 import view.LoggedInView;
 import view.LoginView;
 import view.SignupView;
@@ -111,6 +121,7 @@ import java.awt.*;
 public class AppBuilder {
     private EventDescriptionViewModel eventDescriptionViewModel;
     private EventDescriptionView eventDescriptionView;
+    private UpdateLocationViewModel updateLocationViewModel;
 
     final EventDataAccessInterface eventDataAccessObject = new InMemoryEventDataAccessObject();
     final FileSavedEventsDataAccessObject savedEventsDAO = new FileSavedEventsDataAccessObject();
@@ -149,7 +160,27 @@ public class AppBuilder {
         cardPanel.setLayout(cardLayout);
     }
 
-    public AppBuilder addSignupView() {
+    public AppBuilder addUpdateLocationUseCase() {
+        updateLocationViewModel = new UpdateLocationViewModel();
+
+        GeocodingDataAccessInterface geocodingService = new GeocodingService();
+        UpdateLocationOutputBoundary presenter = new UpdateLocationPresenter(updateLocationViewModel);
+        UpdateLocationInputBoundary interactor = new UpdateLocationInteractor(
+                userDataAccessObject,
+                geocodingService,
+                presenter
+        );
+
+        UpdateLocationController controller = new UpdateLocationController(interactor);
+
+        displayLocalEventsView.setUpdateLocationController(controller);
+        displayLocalEventsView.setUpdateLocationViewModel(updateLocationViewModel);
+
+        return this;
+    }
+
+
+        public AppBuilder addSignupView() {
         signupViewModel = new SignupViewModel();
         signupView = new SignupView(signupViewModel);
         cardPanel.add(signupView, signupView.getViewName());

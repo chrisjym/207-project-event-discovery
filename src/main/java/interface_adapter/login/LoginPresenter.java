@@ -27,20 +27,35 @@ public class LoginPresenter implements LoginOutputBoundary {
         this.signUpViewModel = signupViewModel;
     }
 
+    // OLD CODE
+//    @Override
+//    public void prepareSuccessView(LoginOutputData response) {
+//        // On success, update the loggedInViewModel's state
+//        final LoggedInState loggedInState = loggedInViewModel.getState();
+//        loggedInState.setUsername(response.getUsername());
+//        this.loggedInViewModel.firePropertyChange();
+//
+//        // and clear everything from the LoginViewModel's state
+//        loginViewModel.setState(new LoginState());
+//
+//        // switch to the logged in view
+//        viewManagerModel.setState("display local events");
+//        viewManagerModel.firePropertyChange();
+//    }
+
     @Override
     public void prepareSuccessView(LoginOutputData response) {
-        // On success, update the loggedInViewModel's state
         final LoggedInState loggedInState = loggedInViewModel.getState();
         loggedInState.setUsername(response.getUsername());
         this.loggedInViewModel.firePropertyChange();
 
-        // and clear everything from the LoginViewModel's state
         loginViewModel.setState(new LoginState());
 
-        // switch to the logged in view
+        // The view will load the user's location when it becomes visible
         viewManagerModel.setState("display local events");
         viewManagerModel.firePropertyChange();
     }
+
 
     @Override
     public void prepareFailView(String error) {
