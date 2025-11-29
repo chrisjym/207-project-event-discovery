@@ -167,7 +167,7 @@ public class EventListByDateViewTest {
             // Set up a sample state
             CalendarFlowState state = new CalendarFlowState();
             state.setDate(LocalDate.of(2024, 11, 22));
-            state.setEventList(createTestEvents());  // uses the static helper
+            state.setEventList(createTestEvents());
 
             viewModel.setState(state);
             viewModel.firePropertyChange();
@@ -176,8 +176,8 @@ public class EventListByDateViewTest {
             JFrame frame = new JFrame("EventListByDateView – Preview");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setContentPane(view);
-            frame.pack();                    // sizes frame to preferred sizes
-            frame.setLocationRelativeTo(null); // center on screen
+            frame.pack();
+            frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });
     }

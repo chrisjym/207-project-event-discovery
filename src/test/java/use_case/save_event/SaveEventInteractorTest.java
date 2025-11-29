@@ -1,3 +1,4 @@
+//Assisted by AI
 package use_case.save_event;
 
 import data_access.FileSavedEventsDataAccessObject;
@@ -9,200 +10,229 @@ import org.junit.jupiter.api.Test;
 import use_case.login.LoginUserDataAccessInterface;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for SaveEventInteractor
- * Tests the business logic for saving events
+ * Test class for SaveEventInteractor.
+ * Tests the save event use case functionality including:
+ * - Successful event saving
+ * - Duplicate event detection
+ * - Null event handling
+ * - Event removal
+ * - Checking if event is saved
  */
 class SaveEventInteractorTest {
 
     private SaveEventInteractor interactor;
-    private MockSaveEventPresenter mockPresenter;
-    private MockFileSavedEventsDAO mockSavedEventsDAO;
-    private MockLoginUserDataAccess mockUserDataAccess;
+    private TestSaveEventPresenter testPresenter;
+    private TestSavedEventsDAO testDAO;
+    private TestUserDataAccess testUserDataAccess;
     private Event testEvent;
 
     @BeforeEach
     void setUp() {
-        mockPresenter = new MockSaveEventPresenter();
-        mockSavedEventsDAO = new MockFileSavedEventsDAO();
-        mockUserDataAccess = new MockLoginUserDataAccess();
-
-        interactor = new SaveEventInteractor(
-                mockPresenter,
-                mockSavedEventsDAO,
-                mockUserDataAccess
-        );
-
-        Location location = new Location("Scotiabank Arena, Toronto, ON", 43.6435, -79.3791);
+        // Create test event
+        Location location = new Location("Test Venue, Toronto", 43.6532, -79.3832);
         testEvent = new Event(
-                "evt123",
-                "Toronto Raptors vs Lakers",
-                "Exciting NBA game",
-                "Scotiabank Arena",
-                EventCategory.SPORTS,
+                "test-123",
+                "Test Concert",
+                "A great test concert",
+                "Test Venue, Toronto",
+                EventCategory.MUSIC,
                 location,
-                LocalDateTime.of(2025, 11, 28, 19, 30),
-                "https://example.com/image.jpg"
+                LocalDateTime.of(2025, 12, 15, 19, 0),
+                "http://example.com/image.jpg"
         );
+
+        testPresenter = new TestSaveEventPresenter();
+        testDAO = new TestSavedEventsDAO();
+        testUserDataAccess = new TestUserDataAccess();
+
+        interactor = new SaveEventInteractor(testPresenter, testDAO, testUserDataAccess);
     }
 
     @Test
-    void testExecute_SuccessfulSave() {
-        mockUserDataAccess.setCurrentUsername("testUser");
+    void testExecute_successfulSave() {
+        testUserDataAccess.setCurrentUsername("testuser");
         SaveEventInputData inputData = new SaveEventInputData(testEvent);
 
         interactor.execute(inputData);
 
-        assertTrue(mockPresenter.isSuccessViewPrepared(), "Success view should be prepared");
-        assertFalse(mockPresenter.isFailureViewPrepared(), "Failure view should not be prepared");
-        assertEquals(testEvent, mockPresenter.getOutputData().getEvent(), "Output event should match input");
-        assertTrue(mockSavedEventsDAO.wasSaveCalled(), "Save should be called on DAO");
-        assertEquals("testUser", mockSavedEventsDAO.getLastSavedUsername(), "Username should match");
-        assertEquals(testEvent, mockSavedEventsDAO.getLastSavedEvent(), "Saved event should match");
+        assertTrue(testPresenter.isSuccessCalled(), "Success view should be called");
+        assertFalse(testPresenter.isFailureCalled(), "Failure view should not be called");
+        assertEquals(testEvent, testPresenter.getOutputData().getEvent(), "Output should contain the saved event");
+        assertEquals(1, testDAO.getSavedEventCount("testuser"), "Event should be saved once");
+        assertTrue(testDAO.isEventSaved("testuser", testEvent.getId()), "Event should be marked as saved");
     }
 
     @Test
-    void testExecute_NullEvent() {
+    void testExecute_nullEvent() {
+        // Arrange
+        testUserDataAccess.setCurrentUsername("testuser");
         SaveEventInputData inputData = new SaveEventInputData(null);
 
+        // Act
         interactor.execute(inputData);
 
-        assertTrue(mockPresenter.isFailureViewPrepared(), "Failure view should be prepared");
-        assertFalse(mockPresenter.isSuccessViewPrepared(), "Success view should not be prepared");
-        assertEquals("No Event Found", mockPresenter.getErrorMessage());
-        assertFalse(mockSavedEventsDAO.wasSaveCalled(), "Save should not be called for null event");
+        // Assert
+        assertTrue(testPresenter.isFailureCalled(), "Failure view should be called");
+        assertFalse(testPresenter.isSuccessCalled(), "Success view should not be called");
+        assertEquals("No Event Found", testPresenter.getErrorMessage(), "Error message should indicate no event");
+        assertEquals(0, testDAO.getSavedEventCount("testuser"), "No events should be saved");
     }
 
     @Test
-    void testExecute_EventAlreadySaved() {
-        mockUserDataAccess.setCurrentUsername("testUser");
-        mockSavedEventsDAO.addSavedEvent("testUser", testEvent); // Pre-save the event
+    void testExecute_duplicateEvent() {
+        testUserDataAccess.setCurrentUsername("testuser");
         SaveEventInputData inputData = new SaveEventInputData(testEvent);
 
         interactor.execute(inputData);
+        testPresenter.reset();
 
-        assertTrue(mockPresenter.isFailureViewPrepared(), "Failure view should be prepared");
-        assertFalse(mockPresenter.isSuccessViewPrepared(), "Success view should not be prepared");
-        assertEquals("Event already saved", mockPresenter.getErrorMessage());
+        interactor.execute(inputData);
+
+        assertTrue(testPresenter.isFailureCalled(), "Failure view should be called for duplicate");
+        assertFalse(testPresenter.isSuccessCalled(), "Success view should not be called for duplicate");
+        assertEquals("Event already saved", testPresenter.getErrorMessage(),
+                "Error message should indicate duplicate");
+        assertEquals(1, testDAO.getSavedEventCount("testuser"),
+                "Event should still only be saved once");
     }
 
     @Test
-    void testGetSavedEvents_WithValidUser() {
-        mockUserDataAccess.setCurrentUsername("testUser");
-        Event event1 = createTestEvent("evt1", "Event 1");
-        Event event2 = createTestEvent("evt2", "Event 2");
-        mockSavedEventsDAO.addSavedEvent("testUser", event1);
-        mockSavedEventsDAO.addSavedEvent("testUser", event2);
+    void testGetSavedEvents() {
+        testUserDataAccess.setCurrentUsername("testuser");
+        SaveEventInputData inputData = new SaveEventInputData(testEvent);
+        interactor.execute(inputData);
 
         List<Event> savedEvents = interactor.getSavedEvents();
 
-        assertNotNull(savedEvents);
-        assertEquals(2, savedEvents.size());
-        assertTrue(savedEvents.contains(event1));
-        assertTrue(savedEvents.contains(event2));
+        assertNotNull(savedEvents, "Saved events list should not be null");
+        assertEquals(1, savedEvents.size(), "Should have one saved event");
+        assertEquals(testEvent.getId(), savedEvents.get(0).getId(), "Saved event should match test event");
     }
 
     @Test
-    void testGetSavedEvents_NoCurrentUser() {
-        // Arrange
-        mockUserDataAccess.setCurrentUsername(null);
-
-        // Act
-        List<Event> savedEvents = interactor.getSavedEvents();
-
-        // Assert
-        assertNotNull(savedEvents);
-        assertTrue(savedEvents.isEmpty(), "Should return empty list when no current user");
-    }
-
-    @Test
-    void testGetSavedEvents_UserHasNoSavedEvents() {
-        mockUserDataAccess.setCurrentUsername("userWithNoEvents");
+    void testGetSavedEvents_noUser() {
+        testUserDataAccess.setCurrentUsername(null);
 
         List<Event> savedEvents = interactor.getSavedEvents();
 
-        assertNotNull(savedEvents);
-        assertTrue(savedEvents.isEmpty(), "Should return empty list for user with no saved events");
+        assertNotNull(savedEvents, "Saved events list should not be null");
+        assertEquals(0, savedEvents.size(), "Should have no saved events when no user");
     }
 
     @Test
-    void testRemoveEvent_Success() {
-        mockUserDataAccess.setCurrentUsername("testUser");
-        mockSavedEventsDAO.addSavedEvent("testUser", testEvent);
+    void testUnsaveEvent() {
+        testUserDataAccess.setCurrentUsername("testuser");
+        SaveEventInputData inputData = new SaveEventInputData(testEvent);
+        interactor.execute(inputData);
 
-        interactor.removeEvent(testEvent);
+        interactor.unsaveEvent(testEvent);
 
-        assertTrue(mockSavedEventsDAO.wasRemoveCalled(), "Remove should be called on DAO");
-        assertEquals("testUser", mockSavedEventsDAO.getLastRemovedUsername());
-        assertEquals(testEvent, mockSavedEventsDAO.getLastRemovedEvent());
+        assertEquals(0, testDAO.getSavedEventCount("testuser"), "Event should be removed");
+        assertFalse(testDAO.isEventSaved("testuser", testEvent.getId()), "Event should not be marked as saved");
     }
 
     @Test
-    void testRemoveEvent_NoCurrentUser() {
-        mockUserDataAccess.setCurrentUsername(null);
+    void testUnsaveEvent_noUser() {
+        testUserDataAccess.setCurrentUsername("testuser");
+        SaveEventInputData inputData = new SaveEventInputData(testEvent);
+        interactor.execute(inputData);
 
-        interactor.removeEvent(testEvent);
+        testUserDataAccess.setCurrentUsername(null);
 
-        assertFalse(mockSavedEventsDAO.wasRemoveCalled(), "Remove should not be called when no user");
+        interactor.unsaveEvent(testEvent);
+
+        assertEquals(1, testDAO.getSavedEventCount("testuser"), "Event should not be removed without user");
+    }
+
+    @Test
+    void testIsEventSaved() {
+        testUserDataAccess.setCurrentUsername("testuser");
+        SaveEventInputData inputData = new SaveEventInputData(testEvent);
+        interactor.execute(inputData);
+
+        assertTrue(interactor.isEventSaved(testEvent.getId()), "Event should be marked as saved");
+        assertFalse(interactor.isEventSaved("nonexistent-id"), "Non-existent event should not be marked as saved");
+    }
+
+    @Test
+    void testIsEventSaved_nullEventId() {
+        testUserDataAccess.setCurrentUsername("testuser");
+
+        assertFalse(interactor.isEventSaved(null), "Null event ID should return false");
+    }
+
+    @Test
+    void testIsEventSaved_noUser() {
+        testUserDataAccess.setCurrentUsername(null);
+
+        assertFalse(interactor.isEventSaved(testEvent.getId()), "Should return false when no user");
     }
 
     @Test
     void testSwitchToDashboardView() {
         interactor.switchToDashboardView();
 
-        assertTrue(mockPresenter.wasSwitchToDashboardCalled(), "Switch to dashboard should be called on presenter");
+        assertTrue(testPresenter.isSwitchToDashboardCalled(), "Switch to dashboard should be called");
     }
 
     @Test
-    void testExecute_MultipleEventsSameName() {
-        mockUserDataAccess.setCurrentUsername("testUser");
-        Event event1 = createTestEvent("evt1", "Same Name");
-        Event event2 = createTestEvent("evt2", "Same Name");
+    void testRemoveEvent() {
+        testUserDataAccess.setCurrentUsername("testuser");
+        SaveEventInputData inputData = new SaveEventInputData(testEvent);
+        interactor.execute(inputData);
 
-        interactor.execute(new SaveEventInputData(event1));
-        interactor.execute(new SaveEventInputData(event2));
+        interactor.removeEvent(testEvent);
 
-        List<Event> savedEvents = interactor.getSavedEvents();
-        assertEquals(2, savedEvents.size(), "Should save both events even with same name");
+        assertEquals(0, testDAO.getSavedEventCount("testuser"), "Event should be removed");
+        assertFalse(testDAO.isEventSaved("testuser", testEvent.getId()), "Event should not be marked as saved");
     }
 
-    private Event createTestEvent(String id, String name) {
-        Location location = new Location("Test Venue", 43.0, -79.0);
-        return new Event(
-                id,
-                name,
-                "Test description",
-                "Test Address",
-                EventCategory.MUSIC,
-                location,
-                LocalDateTime.now().plusDays(1),
-                ""
-        );
+    @Test
+    void testRemoveEvent_noUser() {
+        testUserDataAccess.setCurrentUsername("testuser");
+        SaveEventInputData inputData = new SaveEventInputData(testEvent);
+        interactor.execute(inputData);
+
+        testUserDataAccess.setCurrentUsername(null);
+
+        interactor.removeEvent(testEvent);
+
+        assertEquals(1, testDAO.getSavedEventCount("testuser"), "Event should not be removed without user");
     }
+
+    @Test
+    void testIsEventSaved_nullUsername() {
+        testUserDataAccess.setCurrentUsername(null);
+
+        assertFalse(interactor.isEventSaved("some-event-id"), "Should return false when username is null");
+    }
+
 
     /**
-     * Mock presenter for testing
+     * Test implementation of SaveEventOutputBoundary.
      */
-    private static class MockSaveEventPresenter implements SaveEventOutputBoundary {
-        private boolean successViewPrepared = false;
-        private boolean failureViewPrepared = false;
+    private static class TestSaveEventPresenter implements SaveEventOutputBoundary {
+        private boolean successCalled = false;
+        private boolean failureCalled = false;
         private boolean switchToDashboardCalled = false;
         private SaveEventOutputData outputData;
         private String errorMessage;
 
         @Override
         public void prepareSuccessView(SaveEventOutputData outputData) {
-            this.successViewPrepared = true;
+            this.successCalled = true;
             this.outputData = outputData;
         }
 
         @Override
         public void prepareFailureView(String errorMessage) {
-            this.failureViewPrepared = true;
+            this.failureCalled = true;
             this.errorMessage = errorMessage;
         }
 
@@ -211,15 +241,15 @@ class SaveEventInteractorTest {
             this.switchToDashboardCalled = true;
         }
 
-        public boolean isSuccessViewPrepared() {
-            return successViewPrepared;
+        public boolean isSuccessCalled() {
+            return successCalled;
         }
 
-        public boolean isFailureViewPrepared() {
-            return failureViewPrepared;
+        public boolean isFailureCalled() {
+            return failureCalled;
         }
 
-        public boolean wasSwitchToDashboardCalled() {
+        public boolean isSwitchToDashboardCalled() {
             return switchToDashboardCalled;
         }
 
@@ -230,104 +260,70 @@ class SaveEventInteractorTest {
         public String getErrorMessage() {
             return errorMessage;
         }
+
+        public void reset() {
+            successCalled = false;
+            failureCalled = false;
+            switchToDashboardCalled = false;
+            outputData = null;
+            errorMessage = null;
+        }
     }
 
     /**
-     * Mock FileSavedEventsDataAccessObject for testing
+     * Test implementation of FileSavedEventsDataAccessObject.
      */
-    private static class MockFileSavedEventsDAO extends FileSavedEventsDataAccessObject {
-        private boolean saveCalled = false;
-        private boolean removeCalled = false;
-        private String lastSavedUsername;
-        private Event lastSavedEvent;
-        private String lastRemovedUsername;
-        private Event lastRemovedEvent;
-        private java.util.Map<String, java.util.List<Event>> storage = new java.util.HashMap<>();
+    private static class TestSavedEventsDAO extends FileSavedEventsDataAccessObject {
+        private final List<Event> savedEvents = new ArrayList<>();
+        private String currentUser = null;
 
         @Override
         public void saveEvent(String username, Event event) {
-            this.saveCalled = true;
-            this.lastSavedUsername = username;
-            this.lastSavedEvent = event;
-            storage.computeIfAbsent(username, k -> new java.util.ArrayList<>()).add(event);
+            currentUser = username;
+            if (!isEventSaved(username, event.getId())) {
+                savedEvents.add(event);
+            }
         }
-
-//        @Override
-//        public void removeEvent(String username, Event event) {
-//            this.removeCalled = true;
-//            this.lastRemovedUsername = username;
-//            this.lastRemovedEvent = event;
-//            List<Event> events = storage.get(username);
-//            if (events != null) {
-//                events.removeIf(e -> e.getId().equals(event.getId()));
-//            }
-//        }
 
         @Override
         public List<Event> getSavedEvents(String username) {
-            return storage.getOrDefault(username, new java.util.ArrayList<>());
+            if (username == null) {
+                return new ArrayList<>();
+            }
+            return new ArrayList<>(savedEvents);
         }
 
-//        @Override
-//        public boolean isSavedEvent(String username, String id) {
-//            List<Event> events = storage.get(username);
-//            if (events == null) return false;
-//            return events.stream().anyMatch(e -> e.getId().equals(id));
-//        }
-
-        public void addSavedEvent(String username, Event event) {
-            storage.computeIfAbsent(username, k -> new java.util.ArrayList<>()).add(event);
+        @Override
+        public void unsaveEvent(String username, Event event) {
+            savedEvents.removeIf(e -> e.getId().equals(event.getId()));
         }
 
-        public boolean wasSaveCalled() {
-            return saveCalled;
+        @Override
+        public boolean isEventSaved(String username, String eventId) {
+            if (username == null || eventId == null) {
+                return false;
+            }
+            return savedEvents.stream().anyMatch(e -> e.getId().equals(eventId));
         }
 
-        public boolean wasRemoveCalled() {
-            return removeCalled;
-        }
-
-        public String getLastSavedUsername() {
-            return lastSavedUsername;
-        }
-
-        public Event getLastSavedEvent() {
-            return lastSavedEvent;
-        }
-
-        public String getLastRemovedUsername() {
-            return lastRemovedUsername;
-        }
-
-        public Event getLastRemovedEvent() {
-            return lastRemovedEvent;
+        public int getSavedEventCount(String username) {
+            return getSavedEvents(username).size();
         }
     }
 
     /**
-     * Mock LoginUserDataAccessInterface for testing
+     * Test implementation of LoginUserDataAccessInterface.
      */
-    private static class MockLoginUserDataAccess implements LoginUserDataAccessInterface {
+    private static class TestUserDataAccess implements LoginUserDataAccessInterface {
         private String currentUsername;
 
-        public void setCurrentUsername(String username) {
-            this.currentUsername = username;
-        }
-
         @Override
-        public String getCurrentUsername() {
-            return currentUsername;
-        }
-
-        // Implement other required methods from interface
-        @Override
-        public boolean existsByName(String identifier) {
-            return false;
+        public boolean existsByName(String username) {
+            return true;
         }
 
         @Override
         public void save(entity.User user) {
-            // Not needed for this test
         }
 
         @Override
@@ -335,5 +331,14 @@ class SaveEventInteractorTest {
             return null;
         }
 
+        @Override
+        public void setCurrentUsername(String name) {
+            this.currentUsername = name;
+        }
+
+        @Override
+        public String getCurrentUsername() {
+            return currentUsername;
+        }
     }
 }

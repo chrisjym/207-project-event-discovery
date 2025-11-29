@@ -3,7 +3,7 @@ package use_case.calendarFlow.viewDemoAndTest;
 import view.CalendarView;
 import javax.swing.*;
 
-public class CalendarFlowViewTest {
+public class CalendarFlowViewDemo {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Calendar Demo");
