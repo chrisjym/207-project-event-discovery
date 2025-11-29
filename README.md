@@ -4,9 +4,8 @@
 
 # Table of Contents
 - [Overview](#overview)
-- [Usage Guide](#guide)
+- [Usage Guide](#usage-guide)
 - [Contributors](#contributors)
-- [Demo/Screenshots](#demo)
 - [PR Style](#style)
 - [Setup](#setup)
 
@@ -29,7 +28,7 @@ Event Gate: This project acts like an alternative to Ticketmaster, allowing user
 - Users can view the description of the events
 
 
-#Contributors:
+# Contributors
 1. Christopher Mong
 2. Joyi Xue
 3. Min-Hsuan (Angelie) Wu
@@ -37,10 +36,11 @@ Event Gate: This project acts like an alternative to Ticketmaster, allowing user
 
 
 
-# PR Style:
+# Style
 - [chore]: Used to represent menial tasks that were simple fixes or style cleanup.
+- [feat/Feature]: used to represent a large task that is a new feature to the program.
 
-# Initial Setup:
+# Setup
 In order to properly use the Ticketmaster API, you must sign up to Ticketmaster's open source developer site; then you will receive an API Key from the Discovery API. This should be substituted into the EventDataAccessObject's API_KEY constant. Only from here will you have access to real time events from Ticketmaster.
 
 <img width="739" height="114" alt="Screenshot 2025-11-24 at 6 59 17 PM" src="https://github.com/user-attachments/assets/543518f4-4a39-4e21-8520-e2e40281e90e" />
