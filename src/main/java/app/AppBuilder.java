@@ -99,25 +99,8 @@ import java.awt.*;
 
 /**
  * AppBuilder - Constructs and wires together all components of the application.
- *
- * CLEAN ARCHITECTURE NOTE:
- * This class is responsible for Dependency Injection and wiring.
- * It creates all the layers and connects them:
- *
- * 1. ENTITIES (innermost): Event, User, Location, etc.
- * 2. USE CASES: Interactors (business logic)
- * 3. INTERFACE ADAPTERS: Controllers, Presenters, ViewModels
- * 4. FRAMEWORKS & DRIVERS (outermost): Views, Data Access Objects
- *
- * The Dependency Rule: Dependencies point INWARD.
- * - Views depend on ViewModels and Controllers
- * - Controllers depend on Use Case Input Boundaries (interfaces)
- * - Presenters implement Use Case Output Boundaries (interfaces)
- * - Use Cases depend on Entity interfaces, not concrete implementations
- *
- * This builder ensures proper dependency injection so each layer
- * only knows about the layers inside it, never outside.
  */
+
 public class AppBuilder {
     private EventDescriptionViewModel eventDescriptionViewModel;
     private EventDescriptionView eventDescriptionView;
@@ -176,6 +159,8 @@ public class AppBuilder {
         displayLocalEventsView.setUpdateLocationController(controller);
         displayLocalEventsView.setUpdateLocationViewModel(updateLocationViewModel);
 
+        displayLocalEventsView.setUserDataAccess(userDataAccessObject);
+
         return this;
     }
 
@@ -230,6 +215,7 @@ public class AppBuilder {
     public AppBuilder addSaveEventView() {
         saveEventViewModel = new SaveEventViewModel();
         saveEventsView = new SaveEventsView(saveEventViewModel);
+        saveEventsView.setViewManagerModel(viewManagerModel);  // ADD THIS!
         cardPanel.add(saveEventsView, saveEventsView.getViewName());
         return this;
     }
@@ -253,6 +239,11 @@ public class AppBuilder {
         if (saveEventsView != null) {
             saveEventsView.setSaveEventController(saveEventController);
             saveEventsView.setSaveEventInteractor(saveEventInteractor);
+        }
+
+        // Add after the saveEventController wiring:
+        if (saveEventInteractor != null) {
+            eventDescriptionView.setSaveEventInteractor(saveEventInteractor);
         }
 
         if (saveButtonView != null) {

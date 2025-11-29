@@ -9,6 +9,7 @@ import interface_adapter.display_local_events.DisplayLocalEventsViewModel;
 import interface_adapter.update_location.UpdateLocationController;
 import interface_adapter.update_location.UpdateLocationViewModel;
 import interface_adapter.update_location.UpdateLocationState;
+import use_case.update_location.UpdateLocationUserDataAccessInterface;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -21,13 +22,16 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * View for displaying local events with user location support.
- * Improved layout with two-row top bar.
+ * View for displaying local events with user location support and date filtering.
+ * Supports loading saved location from previous sessions.
  */
 public class DisplayLocalEventsView extends JPanel implements PropertyChangeListener {
 
@@ -41,10 +45,16 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
     // Location components
     private UpdateLocationController updateLocationController;
     private UpdateLocationViewModel updateLocationViewModel;
+    private UpdateLocationUserDataAccessInterface userDataAccess;
     private JTextField addressField;
     private JButton setLocationButton;
     private JLabel currentLocationLabel;
     private JButton searchEventsButton;
+
+    // Date filter components
+    private LocalDate selectedDate = null;  // null means show all dates
+    private JLabel dateFilterLabel;
+    private JButton clearDateFilterButton;
 
     private final JLabel appNameLabel = new JLabel("Event Gate");
     private final JComboBox<String> categoryBox = new JComboBox<>(new String[]{"ALL", "Music", "Sports", "Arts & Theatre", "Film"});
@@ -55,12 +65,13 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
     private final JButton savedEventsButton = new JButton("Saved Events");
     private final JPanel cardsContainer = new JPanel();
     private final JScrollPane cardsScrollPane;
-    private final JLabel emptyStateLabel = new JLabel("Set your location and click 'Search Events' to see local events.", SwingConstants.CENTER);
+    private final JLabel emptyStateLabel = new JLabel("Set your location and search to see local events.", SwingConstants.CENTER);
     private static final double DEFAULT_RADIUS_KM = 50.0;
     private ViewManagerModel viewManagerModel;
 
     // User's saved location
     private Location userLocation = null;
+    private boolean locationLoaded = false;  // Track if we've tried to load saved location
 
     // Event selection listener for navigation
     private EventSelectionListener eventSelectionListener;
@@ -77,7 +88,6 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         setBorder(new EmptyBorder(0, 0, 0, 0));
         setBackground(new Color(245, 247, 250));
 
-        // Two-row top bar
         add(buildTopBar(), BorderLayout.NORTH);
         add(buildSideBar(), BorderLayout.WEST);
 
@@ -93,6 +103,14 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         calendarButton.addActionListener(e -> navigateToCalendar());
         logoutButton.addActionListener(e -> handleLogout());
         savedEventsButton.addActionListener(e -> navigateToSavedEvents());
+
+        // Load saved location when view becomes visible
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent e) {
+                loadSavedLocationIfNeeded();
+            }
+        });
     }
 
     public void setViewManagerModel(ViewManagerModel viewManagerModel) {
@@ -116,37 +134,108 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         this.updateLocationViewModel.addPropertyChangeListener(this);
     }
 
+    /**
+     * Set the user data access for loading saved location.
+     */
+    public void setUserDataAccess(UpdateLocationUserDataAccessInterface userDataAccess) {
+        this.userDataAccess = userDataAccess;
+    }
+
     public void setEventSelectionListener(EventSelectionListener listener) {
         this.eventSelectionListener = listener;
     }
 
-    public void setUserLocation(Location location, String address) {
-        this.userLocation = location;
-        if (location != null && currentLocationLabel != null) {
-            // Shorten the address for display
-            String displayAddress = shortenAddress(address);
-            currentLocationLabel.setText("📍 " + displayAddress);
-            currentLocationLabel.setForeground(new Color(34, 197, 94));
+    /**
+     * Load the user's saved location from the database if not already set.
+     * Called when the view becomes visible after login.
+     */
+    private void loadSavedLocationIfNeeded() {
+        // Only try to load once per session and only if we don't have a location
+        if (!locationLoaded && userLocation == null && userDataAccess != null) {
+            locationLoaded = true;
+
+            Location savedLocation = userDataAccess.getCurrentUserLocation();
+            String savedAddress = userDataAccess.getCurrentUserAddress();
+
+            if (savedLocation != null && savedAddress != null && !savedAddress.isEmpty()) {
+                this.userLocation = savedLocation;
+                String displayAddress = shortenAddress(savedAddress);
+                currentLocationLabel.setText(displayAddress);
+                currentLocationLabel.setForeground(new Color(34, 197, 94));  // Green
+                System.out.println("Loaded saved location: " + savedAddress);
+            }
         }
     }
 
     /**
-     * Shorten a long address for display.
+     * Set the user's saved location (called on login or externally).
      */
+    public void setUserLocation(Location location, String address) {
+        this.userLocation = location;
+        if (location != null && currentLocationLabel != null) {
+            String displayAddress = shortenAddress(address);
+            currentLocationLabel.setText(displayAddress);
+            currentLocationLabel.setForeground(new Color(34, 197, 94));
+        }
+    }
+
     private String shortenAddress(String address) {
         if (address == null) return "Location set";
-        if (address.length() <= 40) return address;
-
-        // Try to get just the important parts
+        if (address.length() <= 35) return address;
         String[] parts = address.split(",");
         if (parts.length >= 2) {
             return parts[0].trim() + ", " + parts[1].trim();
         }
-        return address.substring(0, 37) + "...";
+        return address.substring(0, 32) + "...";
     }
 
+    /**
+     * Get the current user location for distance calculations.
+     */
     public Location getCurrentLocationForOthers() {
         return userLocation;
+    }
+
+    /**
+     * Search events for a specific date.
+     * Called from CalendarView when user clicks on a date.
+     */
+    public void searchEventsForDate(LocalDate date) {
+        this.selectedDate = date;
+        updateDateFilterDisplay();
+
+        if (userLocation == null) {
+            userLocation = new Location("Toronto, ON", 43.6532, -79.3832);
+            currentLocationLabel.setText("Toronto, ON (default)");
+            currentLocationLabel.setForeground(new Color(255, 193, 7));
+        }
+
+        onSearch();
+    }
+
+    /**
+     * Clear the date filter and show all events.
+     */
+    public void clearDateFilter() {
+        this.selectedDate = null;
+        updateDateFilterDisplay();
+        renderEvents();
+    }
+
+    private void updateDateFilterDisplay() {
+        if (dateFilterLabel != null && clearDateFilterButton != null) {
+            if (selectedDate != null) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
+                dateFilterLabel.setText("Showing events for: " + selectedDate.format(formatter));
+                dateFilterLabel.setForeground(new Color(25, 118, 210));
+                dateFilterLabel.setVisible(true);
+                clearDateFilterButton.setVisible(true);
+            } else {
+                dateFilterLabel.setText("");
+                dateFilterLabel.setVisible(false);
+                clearDateFilterButton.setVisible(false);
+            }
+        }
     }
 
     @Override
@@ -165,11 +254,10 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         if (state.isSuccess()) {
             userLocation = state.getLocation();
             String displayAddress = shortenAddress(state.getAddress());
-            currentLocationLabel.setText("📍 " + displayAddress);
+            currentLocationLabel.setText(displayAddress);
             currentLocationLabel.setForeground(new Color(34, 197, 94));
             addressField.setText("");
 
-            // Show success briefly
             JOptionPane.showMessageDialog(this,
                     "Location saved!\nYou can now search for events near you.",
                     "Location Set", JOptionPane.INFORMATION_MESSAGE);
@@ -197,42 +285,40 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         row1.setBorder(new EmptyBorder(10, 15, 5, 15));
         row1.setBackground(new Color(25, 118, 210));
 
-        // Left: App name
         appNameLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
         appNameLabel.setForeground(Color.WHITE);
         row1.add(appNameLabel, BorderLayout.WEST);
 
-        // Center: Location input panel
         JPanel locationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         locationPanel.setOpaque(false);
 
-        JLabel locationLabel = new JLabel("📍 Your Location:");
+        JLabel locationLabel = new JLabel("Your Location:");
         locationLabel.setForeground(Color.WHITE);
         locationLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         locationPanel.add(locationLabel);
 
-        addressField = new JTextField(25);
-        addressField.setPreferredSize(new Dimension(250, 30));
-        addressField.setToolTipText("Enter any address, intersection, or landmark (e.g., 'Bloor and Spadina', 'CN Tower', '123 Main St Toronto')");
+        addressField = new JTextField(22);
+        addressField.setPreferredSize(new Dimension(220, 30));
+        addressField.setToolTipText("Enter address, intersection, or landmark (e.g., 'Bloor and Spadina', 'CN Tower')");
         addressField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(200, 200, 200)),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)
         ));
-        // Add placeholder text behavior
-        addressField.setText("Enter address, intersection, or landmark...");
+        addressField.setText("Enter address or landmark...");
         addressField.setForeground(Color.GRAY);
         addressField.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent e) {
-                if (addressField.getText().equals("Enter address, intersection, or landmark...")) {
+                if (addressField.getText().equals("Enter address or landmark...")) {
                     addressField.setText("");
                     addressField.setForeground(Color.BLACK);
                 }
             }
+
             @Override
             public void focusLost(java.awt.event.FocusEvent e) {
                 if (addressField.getText().isEmpty()) {
-                    addressField.setText("Enter address, intersection, or landmark...");
+                    addressField.setText("Enter address or landmark...");
                     addressField.setForeground(Color.GRAY);
                 }
             }
@@ -246,31 +332,28 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
         row1.add(locationPanel, BorderLayout.CENTER);
 
-        // Right: Current location display
         currentLocationLabel = new JLabel("No location set");
         currentLocationLabel.setForeground(new Color(255, 200, 200));
         currentLocationLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
         row1.add(currentLocationLabel, BorderLayout.EAST);
 
-        // === ROW 2: Filters + Search ===
+        // === ROW 2: Search + Filters ===
         JPanel row2 = new JPanel(new BorderLayout());
         row2.setBorder(new EmptyBorder(5, 15, 10, 15));
-        row2.setBackground(new Color(30, 136, 229)); // Slightly lighter blue
+        row2.setBackground(new Color(30, 136, 229));
 
-        // Left: Search events button
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         searchPanel.setOpaque(false);
 
-        searchEventsButton = new JButton("🔍 Search Events Near Me");
+        searchEventsButton = new JButton("Search Events");
         searchEventsButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         searchEventsButton.addActionListener(e -> onSearch());
         styleButton(searchEventsButton, Color.WHITE, new Color(25, 118, 210));
-        searchEventsButton.setPreferredSize(new Dimension(200, 35));
+        searchEventsButton.setPreferredSize(new Dimension(140, 35));
         searchPanel.add(searchEventsButton);
 
         row2.add(searchPanel, BorderLayout.WEST);
 
-        // Center: Category and Sort filters
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         filterPanel.setOpaque(false);
 
@@ -289,7 +372,6 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
         row2.add(filterPanel, BorderLayout.CENTER);
 
-        // Right: Search by name
         JPanel nameSearchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         nameSearchPanel.setOpaque(false);
 
@@ -304,8 +386,30 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
         row2.add(nameSearchPanel, BorderLayout.EAST);
 
+        // === ROW 3: Date Filter Display (hidden by default) ===
+        JPanel row3 = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 5));
+        row3.setBackground(new Color(255, 248, 225));
+        row3.setBorder(new EmptyBorder(5, 10, 5, 10));
+
+        dateFilterLabel = new JLabel("");
+        dateFilterLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        dateFilterLabel.setForeground(new Color(25, 118, 210));
+        dateFilterLabel.setVisible(false);
+        row3.add(dateFilterLabel);
+
+        clearDateFilterButton = new JButton("Clear Filter");
+        clearDateFilterButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        clearDateFilterButton.addActionListener(e -> clearDateFilter());
+        clearDateFilterButton.setVisible(false);
+        clearDateFilterButton.setFocusPainted(false);
+        clearDateFilterButton.setBackground(new Color(244, 67, 54));
+        clearDateFilterButton.setForeground(Color.WHITE);
+        clearDateFilterButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        row3.add(clearDateFilterButton);
+
         topBarContainer.add(row1);
         topBarContainer.add(row2);
+        topBarContainer.add(row3);
 
         return topBarContainer;
     }
@@ -327,9 +431,9 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         sideBar.setBackground(new Color(250, 250, 250));
         sideBar.setPreferredSize(new Dimension(130, 0));
 
-        styleSideButton(calendarButton, "📅 Calendar");
-        styleSideButton(savedEventsButton, "❤️ Saved");
-        styleSideButton(logoutButton, "🚪 Logout");
+        styleSideButton(calendarButton, "Calendar");
+        styleSideButton(savedEventsButton, "Saved");
+        styleSideButton(logoutButton, "Logout");
 
         savedEventsButton.addActionListener(new ActionListener() {
             @Override
@@ -345,8 +449,7 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         sideBar.add(logoutButton);
         sideBar.add(Box.createVerticalGlue());
 
-        // Add help text at bottom
-        JLabel helpLabel = new JLabel("<html><center><small>Tip: Set your location first, then search!</small></center></html>");
+        JLabel helpLabel = new JLabel("<html><center><small>Tip: Click a date in Calendar to filter!</small></center></html>");
         helpLabel.setForeground(new Color(150, 150, 150));
         helpLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         sideBar.add(helpLabel);
@@ -368,12 +471,12 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         ));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Hover effect
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 button.setBackground(new Color(240, 240, 240));
             }
+
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
                 button.setBackground(Color.WHITE);
@@ -384,10 +487,9 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
     private void onSetLocation() {
         String address = addressField.getText().trim();
 
-        // Check for placeholder text
-        if (address.isEmpty() || address.equals("Enter address, intersection, or landmark...")) {
+        if (address.isEmpty() || address.equals("Enter address or landmark...")) {
             JOptionPane.showMessageDialog(this,
-                    "Please enter your location.\n\nYou can enter:\n• A full address (123 Main St, Toronto)\n• An intersection (Bloor and Spadina)\n• A landmark (CN Tower)\n• Just a city (Toronto, ON)",
+                    "Please enter your location.\n\nYou can enter:\n- A full address (123 Main St, Toronto)\n- An intersection (Bloor and Spadina)\n- A landmark (CN Tower)\n- Just a city (Toronto, ON)",
                     "Address Required", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
@@ -431,8 +533,8 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
             if (choice == JOptionPane.YES_OPTION) {
                 userLocation = new Location("Toronto, ON", 43.6532, -79.3832);
-                currentLocationLabel.setText("📍 Toronto, ON (default)");
-                currentLocationLabel.setForeground(new Color(255, 193, 7)); // Yellow/warning
+                currentLocationLabel.setText("Toronto, ON (default)");
+                currentLocationLabel.setForeground(new Color(255, 193, 7));
             } else {
                 return;
             }
@@ -440,7 +542,6 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
         String category = (String) categoryBox.getSelectedItem();
 
-        // Show loading state
         searchEventsButton.setText("Searching...");
         searchEventsButton.setEnabled(false);
 
@@ -453,7 +554,7 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
             @Override
             protected void done() {
-                searchEventsButton.setText("🔍 Search Events Near Me");
+                searchEventsButton.setText("Search Events");
                 searchEventsButton.setEnabled(true);
             }
         };
@@ -462,35 +563,50 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
     private void renderEmptyState() {
         cardsContainer.removeAll();
-        cardsContainer.setLayout(new BorderLayout());
+        cardsContainer.setLayout(new GridBagLayout());
+        cardsContainer.setBackground(new Color(245, 247, 250));
 
         JPanel emptyPanel = new JPanel();
         emptyPanel.setLayout(new BoxLayout(emptyPanel, BoxLayout.Y_AXIS));
         emptyPanel.setBackground(new Color(245, 247, 250));
-        emptyPanel.setBorder(new EmptyBorder(50, 50, 50, 50));
+        emptyPanel.setBorder(new EmptyBorder(30, 50, 30, 50));
 
-        JLabel iconLabel = new JLabel("🎫", SwingConstants.CENTER);
-        iconLabel.setFont(new Font("Segoe UI", Font.PLAIN, 48));
+        // Icon
+        JLabel iconLabel = new JLabel("*", SwingConstants.CENTER);
+        iconLabel.setFont(new Font("Segoe UI", Font.BOLD, 48));
+        iconLabel.setForeground(new Color(100, 100, 100));
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        // Title
         JLabel titleLabel = new JLabel("Find Events Near You");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(50, 50, 50));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel descLabel = new JLabel("<html><center>Enter your location above and click<br>'Search Events Near Me' to discover local events!</center></html>");
+        // Description
+        String message = selectedDate != null
+                ? "<html><div style='text-align: center;'>No events found for the selected date.<br>Try a different date or clear the filter.</div></html>"
+                : "<html><div style='text-align: center;'>Enter your location above and click<br>'Search Events' to discover local events!</div></html>";
+        JLabel descLabel = new JLabel(message);
         descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        descLabel.setForeground(new Color(100, 100, 100));
+        descLabel.setForeground(new Color(120, 120, 120));
         descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        descLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        emptyPanel.add(Box.createVerticalGlue());
         emptyPanel.add(iconLabel);
         emptyPanel.add(Box.createVerticalStrut(20));
         emptyPanel.add(titleLabel);
-        emptyPanel.add(Box.createVerticalStrut(10));
+        emptyPanel.add(Box.createVerticalStrut(12));
         emptyPanel.add(descLabel);
-        emptyPanel.add(Box.createVerticalGlue());
 
-        cardsContainer.add(emptyPanel, BorderLayout.CENTER);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.anchor = GridBagConstraints.CENTER;
+
+        cardsContainer.add(emptyPanel, gbc);
         cardsContainer.revalidate();
         cardsContainer.repaint();
     }
@@ -509,6 +625,30 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
             return;
         } else {
             List<DisplayLocalEventsViewModel.EventCard> cards = new ArrayList<>(viewModel.getEventCards());
+
+            // Apply date filter if set
+            if (selectedDate != null) {
+                cards = cards.stream()
+                        .filter(card -> {
+                            String dateTimeStr = card.getDateTime();
+                            if (dateTimeStr != null && dateTimeStr.length() >= 10) {
+                                try {
+                                    LocalDate cardDate = LocalDate.parse(dateTimeStr.substring(0, 10));
+                                    return cardDate.equals(selectedDate);
+                                } catch (Exception e) {
+                                    return true;
+                                }
+                            }
+                            return true;
+                        })
+                        .collect(Collectors.toList());
+            }
+
+            if (cards.isEmpty()) {
+                renderEmptyState();
+                return;
+            }
+
             String sortBy = (String) sortBox.getSelectedItem();
 
             if ("Name".equalsIgnoreCase(sortBy)) {
@@ -588,8 +728,8 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         if (icon != null) {
             pictureLabel.setIcon(icon);
         } else {
-            pictureLabel.setText("🎫");
-            pictureLabel.setFont(new Font("Segoe UI", Font.PLAIN, 36));
+            pictureLabel.setText("[No Image]");
+            pictureLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             pictureLabel.setForeground(new Color(180, 180, 180));
         }
         card.add(pictureLabel, BorderLayout.NORTH);
@@ -599,18 +739,20 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         textPanel.setBorder(new EmptyBorder(10, 12, 10, 12));
         textPanel.setOpaque(false);
 
-        JLabel nameLabel = new JLabel("<html><b>" + cardData.getName() + "</b></html>");
+        String truncatedName = truncateText(cardData.getName(), 40);
+        JLabel nameLabel = new JLabel("<html><b>" + truncatedName + "</b></html>");
         nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        JLabel addressLabel = new JLabel(cardData.getAddress());
+        String truncatedAddress = truncateText(cardData.getAddress(), 50);
+        JLabel addressLabel = new JLabel(truncatedAddress);
         addressLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         addressLabel.setForeground(new Color(100, 100, 100));
 
-        JLabel dateLabel = new JLabel("📅 " + cardData.getDateTime());
+        JLabel dateLabel = new JLabel(cardData.getDateTime());
         dateLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         dateLabel.setForeground(new Color(120, 120, 120));
 
-        JLabel distanceLabel = new JLabel("📍 " + cardData.getDistanceText() + " away");
+        JLabel distanceLabel = new JLabel(cardData.getDistanceText() + " away");
         distanceLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
         distanceLabel.setForeground(new Color(25, 118, 210));
 
@@ -624,6 +766,15 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
         card.add(textPanel, BorderLayout.CENTER);
         return card;
+    }
+
+    /**
+     * Truncate text to a maximum length, adding "..." if truncated.
+     */
+    private String truncateText(String text, int maxLength) {
+        if (text == null) return "";
+        if (text.length() <= maxLength) return text;
+        return text.substring(0, maxLength - 3) + "...";
     }
 
     private void onEventCardClicked(String eventId) {
@@ -688,6 +839,9 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
     private void handleLogout() {
         userLocation = null;
+        locationLoaded = false;  // Reset so location can be loaded on next login
+        selectedDate = null;
+        updateDateFilterDisplay();
         if (currentLocationLabel != null) {
             currentLocationLabel.setText("No location set");
             currentLocationLabel.setForeground(new Color(255, 200, 200));

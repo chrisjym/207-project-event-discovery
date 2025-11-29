@@ -28,7 +28,7 @@ public class Main {
                 .addLogoutUseCase()
                 .addCalendarFlowUseCase()
                 .addSaveEventUseCase()
-                .addEventDescriptionUseCase()    // NEW
+                .addEventDescriptionUseCase()    
                 .addDisplayLocalEventsUseCase()
                 .addSearchEventByNameUseCase()
                 .addUpdateLocationUseCase()

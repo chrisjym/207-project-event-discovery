@@ -252,28 +252,28 @@ class SaveEventInteractorTest {
             storage.computeIfAbsent(username, k -> new java.util.ArrayList<>()).add(event);
         }
 
-        @Override
-        public void removeEvent(String username, Event event) {
-            this.removeCalled = true;
-            this.lastRemovedUsername = username;
-            this.lastRemovedEvent = event;
-            List<Event> events = storage.get(username);
-            if (events != null) {
-                events.removeIf(e -> e.getId().equals(event.getId()));
-            }
-        }
+//        @Override
+//        public void removeEvent(String username, Event event) {
+//            this.removeCalled = true;
+//            this.lastRemovedUsername = username;
+//            this.lastRemovedEvent = event;
+//            List<Event> events = storage.get(username);
+//            if (events != null) {
+//                events.removeIf(e -> e.getId().equals(event.getId()));
+//            }
+//        }
 
         @Override
         public List<Event> getSavedEvents(String username) {
             return storage.getOrDefault(username, new java.util.ArrayList<>());
         }
 
-        @Override
-        public boolean isSavedEvent(String username, String id) {
-            List<Event> events = storage.get(username);
-            if (events == null) return false;
-            return events.stream().anyMatch(e -> e.getId().equals(id));
-        }
+//        @Override
+//        public boolean isSavedEvent(String username, String id) {
+//            List<Event> events = storage.get(username);
+//            if (events == null) return false;
+//            return events.stream().anyMatch(e -> e.getId().equals(id));
+//        }
 
         public void addSavedEvent(String username, Event event) {
             storage.computeIfAbsent(username, k -> new java.util.ArrayList<>()).add(event);

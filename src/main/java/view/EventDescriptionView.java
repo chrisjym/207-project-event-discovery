@@ -4,12 +4,11 @@ import entity.Event;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.event_description.EventDescriptionViewModel;
 import interface_adapter.save_event.SaveEventController;
+import use_case.save_event.SaveEventInteractor;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
@@ -18,12 +17,22 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 
-
+/**
+ * View for displaying event details.
+ *
+ * Features:
+ * - Shows event details (name, category, date, location, description)
+ * - Displays event image
+ * - Shows distance from user's location
+ * - Save Event button that shows "Already Saved" if event is already saved
+ * - Back navigation to events list
+ */
 public class EventDescriptionView extends JPanel implements PropertyChangeListener {
 
     private final EventDescriptionViewModel viewModel;
     private ViewManagerModel viewManagerModel;
     private SaveEventController saveEventController;
+    private SaveEventInteractor saveEventInteractor;  // For checking if event is already saved
     private Event currentEvent;
 
     // UI Components
@@ -225,12 +234,16 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
         saveButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
-                saveButton.setBackground(new Color(37, 99, 235));
+                if (saveButton.isEnabled()) {
+                    saveButton.setBackground(new Color(37, 99, 235));
+                }
             }
 
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
-                saveButton.setBackground(new Color(59, 130, 246));
+                if (saveButton.isEnabled()) {
+                    saveButton.setBackground(new Color(59, 130, 246));
+                }
             }
         });
     }
@@ -249,6 +262,7 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
             addressLabel.setText("N/A");
             distanceLabel.setText("N/A");
             descriptionArea.setText("The requested event could not be found.");
+            resetSaveButton();
             return;
         }
 
@@ -271,6 +285,45 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
 
         // Distance will be set separately via setDistanceText
         distanceLabel.setText("Calculating...");
+
+        // Check if event is already saved and update button accordingly
+        updateSaveButtonState();
+    }
+
+    /**
+     * Check if the current event is already saved and update button state.
+     */
+    private void updateSaveButtonState() {
+        if (currentEvent != null && saveEventInteractor != null) {
+            boolean isAlreadySaved = saveEventInteractor.isEventSaved(currentEvent.getId());
+            if (isAlreadySaved) {
+                showAlreadySavedState();
+            } else {
+                resetSaveButton();
+            }
+        } else {
+            resetSaveButton();
+        }
+    }
+
+    /**
+     * Show the button in "Already Saved" state.
+     */
+    private void showAlreadySavedState() {
+        saveButton.setText("Saved");
+        saveButton.setBackground(new Color(34, 197, 94));  // Green
+        saveButton.setEnabled(false);
+        saveButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
+
+    /**
+     * Reset save button to default state.
+     */
+    private void resetSaveButton() {
+        saveButton.setText("Save Event");
+        saveButton.setBackground(new Color(59, 130, 246));  // Blue
+        saveButton.setEnabled(true);
+        saveButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
     /**
@@ -331,18 +384,12 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
     private void saveEvent() {
         if (currentEvent != null && saveEventController != null) {
             saveEventController.saveEvent(currentEvent);
-            saveButton.setText("Saved ✓");
-            saveButton.setBackground(new Color(34, 197, 94));
-            saveButton.setEnabled(false);
+            showAlreadySavedState();  // Update button to show saved state
 
-            // Reset button after 3 seconds
-            Timer timer = new Timer(3000, e -> {
-                saveButton.setText("Save Event");
-                saveButton.setBackground(new Color(59, 130, 246));
-                saveButton.setEnabled(true);
-            });
-            timer.setRepeats(false);
-            timer.start();
+            // Show confirmation dialog
+            JOptionPane.showMessageDialog(this,
+                    "Event saved! You can view it in your Saved Events.",
+                    "Event Saved", JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this,
                     "Unable to save event. Please try again.",
@@ -357,6 +404,10 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
 
     public void setSaveEventController(SaveEventController saveEventController) {
         this.saveEventController = saveEventController;
+    }
+
+    public void setSaveEventInteractor(SaveEventInteractor saveEventInteractor) {
+        this.saveEventInteractor = saveEventInteractor;
     }
 
     @Override
