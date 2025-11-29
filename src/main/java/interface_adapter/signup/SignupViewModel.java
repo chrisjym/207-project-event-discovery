@@ -11,7 +11,7 @@ public class SignupViewModel extends ViewModel<SignupState> {
     public static final String USERNAME_LABEL = "Username";
     public static final String PASSWORD_LABEL = "Password";
     public static final String REPEAT_PASSWORD_LABEL = "Re-enter password";
-    public static final String TITLE = "Event Gate";
+    public static final String TITLE = "Ticket Monster";
     public static final String CAPTION = "Join us and never miss an event!";
     public static final String TITLE_CAPTION = "Please enter your details to sign in";
 
