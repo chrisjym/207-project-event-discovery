@@ -33,6 +33,7 @@ Event Gate: This project acts like an alternative to Ticketmaster, allowing user
 1. Christopher Mong
 2. Joyi Xue
 3. Min-Hsuan (Angelie) Wu
+4. Yifei Yang
 
 
 
