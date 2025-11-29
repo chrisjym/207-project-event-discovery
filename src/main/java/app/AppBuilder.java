@@ -214,6 +214,9 @@ public class AppBuilder {
         displayLocalEventsViewModel = new DisplayLocalEventsViewModel();
         displayLocalEventsView = new DisplayLocalEventsView(displayLocalEventsViewModel);
         displayLocalEventsView.setViewManagerModel(viewManagerModel);
+        //debug purposes only
+        displayLocalEventsView.setViewManagerModel(viewManagerModel);  // THIS LINE IS CRITICAL!
+
         cardPanel.add(displayLocalEventsView, displayLocalEventsView.getViewName());
         return this;
     }
@@ -228,6 +231,7 @@ public class AppBuilder {
     public AppBuilder addSaveEventView() {
         saveEventViewModel = new SaveEventViewModel();
         saveEventsView = new SaveEventsView(saveEventViewModel);
+        saveEventsView.setViewManagerModel(viewManagerModel);  // ADD THIS!
         cardPanel.add(saveEventsView, saveEventsView.getViewName());
         return this;
     }
@@ -251,6 +255,11 @@ public class AppBuilder {
         if (saveEventsView != null) {
             saveEventsView.setSaveEventController(saveEventController);
             saveEventsView.setSaveEventInteractor(saveEventInteractor);
+        }
+
+        // Add after the saveEventController wiring:
+        if (saveEventInteractor != null) {
+            eventDescriptionView.setSaveEventInteractor(saveEventInteractor);
         }
 
         if (saveButtonView != null) {
@@ -454,6 +463,14 @@ public class AppBuilder {
     }
 
     public JFrame build() {
+        // debuggggg...........
+        System.out.println("=== REGISTERED VIEWS ===");
+        for (Component comp : cardPanel.getComponents()) {
+            System.out.println("View: " + comp.getName());
+        }
+        System.out.println("========================");
+
+
         final JFrame application = new JFrame("Event Gate");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 

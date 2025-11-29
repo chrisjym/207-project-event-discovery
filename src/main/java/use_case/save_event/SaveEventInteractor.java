@@ -1,11 +1,9 @@
 package use_case.save_event;
 
 import data_access.FileSavedEventsDataAccessObject;
-import data_access.FileUserDataAccessObject;
 import entity.Event;
 import use_case.login.LoginUserDataAccessInterface;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SaveEventInteractor implements SaveEventInputBoundary {
@@ -30,7 +28,8 @@ public class SaveEventInteractor implements SaveEventInputBoundary {
             Event event = inputData.getEvent();
             String currentUsername = userDataAccess.getCurrentUsername();
 
-            if (savedEventsDAO.isSavedEvent(currentUsername, event.getId())) {
+            // FIXED: Changed from isSavedEvent to isEventSaved
+            if (savedEventsDAO.isEventSaved(currentUsername, event.getId())) {
                 eventPresenter.prepareFailureView("Event already saved");
                 return;
             }
@@ -46,18 +45,30 @@ public class SaveEventInteractor implements SaveEventInputBoundary {
         eventPresenter.switchToDashboardView();
     }
 
-    public List<Event> getSavedEvents() {
-        String currentUsername = userDataAccess.getCurrentUsername();
-        if (currentUsername == null) {
-            return List.of();
-        }
-        return savedEventsDAO.getSavedEvents(currentUsername);
-    }
-
+    // FIXED: Changed from removeEvent to unsaveEvent
     public void removeEvent(Event event) {
         String currentUsername = userDataAccess.getCurrentUsername();
         if (currentUsername != null) {
-            savedEventsDAO.removeEvent(currentUsername, event);
+            savedEventsDAO.unsaveEvent(currentUsername, event);
         }
+    }
+
+    public List<Event> getSavedEvents() {
+        String username = userDataAccess.getCurrentUsername();
+        if (username == null) return List.of();
+        return savedEventsDAO.getSavedEvents(username);
+    }
+
+    public void unsaveEvent(Event event) {
+        String username = userDataAccess.getCurrentUsername();
+        if (username != null) {
+            savedEventsDAO.unsaveEvent(username, event);
+        }
+    }
+
+    public boolean isEventSaved(String eventId) {
+        String username = userDataAccess.getCurrentUsername();
+        if (username == null || eventId == null) return false;
+        return savedEventsDAO.isEventSaved(username, eventId);
     }
 }
