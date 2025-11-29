@@ -64,9 +64,8 @@ public class  CalendarView extends JPanel implements ActionListener {
 
         JButton backButton = new JButton("← Back");
         backButton.addActionListener(e -> {
-            if (viewManagerModel != null) {
-                viewManagerModel.setState("display local events");
-                viewManagerModel.firePropertyChange();
+            if(calendarFlowController != null) {
+                calendarFlowController.switchToDashboardView();
             }
         });
 
