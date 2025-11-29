@@ -24,7 +24,7 @@ public class SearchBarView extends JPanel {
 
     public SearchBarView(String text, Location userLocation) {
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(600, 30));
+        setPreferredSize(new Dimension(600, 40));
         setOpaque(false);
         this.searchDescription = text;
         this.location = userLocation;
@@ -54,7 +54,7 @@ public class SearchBarView extends JPanel {
             }
         };
         container.setOpaque(false);
-        container.setBorder(new EmptyBorder(8, 20, 8, 20));
+        container.setBorder(new EmptyBorder(5, 20, 5, 20));
 
         searchField = new JTextField() {
             @Override
@@ -71,7 +71,7 @@ public class SearchBarView extends JPanel {
             }
         };
         searchField.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        searchField.setBorder(new EmptyBorder(8, 5, 8, 5));
+        searchField.setBorder(new EmptyBorder(1, 8, 1, 8));
         searchField.setOpaque(false);
         searchField.setForeground(new Color(100, 100, 100));
         searchField.setBackground(new Color(0, 0, 0, 0));

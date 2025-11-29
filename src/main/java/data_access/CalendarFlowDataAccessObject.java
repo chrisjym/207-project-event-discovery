@@ -18,7 +18,7 @@ import use_case.calendarFlow.CalendarFlowDataAccessInterface;
 public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInterface{
     private static final String BASE_URL = "https://app.ticketmaster.com/discovery/v2";
     private static final String EVENTS_ENDPOINT = "/events.json";
-    private static final String API_KEY = System.getenv("TICKETMASTER_API_KEY");
+    private static final String API_KEY = "oL2pW4zAlAZvhBAhPNi5mNYvS7OsBM9J";
     private final OkHttpClient client = new OkHttpClient();
 
     /**
