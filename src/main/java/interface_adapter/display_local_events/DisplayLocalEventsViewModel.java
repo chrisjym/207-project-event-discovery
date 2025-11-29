@@ -1,16 +1,22 @@
 package interface_adapter.display_local_events;
 
+import entity.Event;
 import interface_adapter.ViewModel;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 简化的 ViewModel - 基本的 PropertyChange 支持
  */
+
 public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsState> {
 
     public static final String VIEW_NAME = "display local events";
     private LocalDate selectedDateFromCalendar;
+
+    // Store actual Event objects for navigation purposes
+    private List<Event> events = new ArrayList<>();
 
     public DisplayLocalEventsViewModel() {
         super(VIEW_NAME);
@@ -18,7 +24,12 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
     }
 
     /**
-     * EventCard 内部类 - 表示单个事件卡片
+     * EventCard - a view-specific data structure.
+     *
+     * CLEAN ARCHITECTURE NOTE:
+     * This is a Data Transfer Object (DTO) for the View layer.
+     * It contains only the data needed for display, formatted appropriately.
+     * This separates the View's data needs from the domain Entity structure.
      */
     public static class EventCard {
         private final String id;
@@ -49,7 +60,29 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
         public String getImageUrl() { return imageUrl; }
     }
 
-    // 基本的 getter/setter 方法
+    // Getter/setter for Event objects (for navigation)
+    public List<Event> getEvents() {
+        return events;
+    }
+
+    public void setEvents(List<Event> events) {
+        this.events = events != null ? new ArrayList<>(events) : new ArrayList<>();
+    }
+
+    /**
+     * Find an Event by its ID.
+     * Used when user clicks on an EventCard to navigate to details.
+     */
+    public Event getEventById(String id) {
+        for (Event event : events) {
+            if (event.getId().equals(id)) {
+                return event;
+            }
+        }
+        return null;
+    }
+
+    // Basic getter/setter methods
     public List<EventCard> getEventCards() {
         return this.getState().getEventCards();
     }
@@ -85,7 +118,7 @@ public class DisplayLocalEventsViewModel extends ViewModel<DisplayLocalEventsSta
         return this.getState().hasError();
     }
 
-    // 搜索参数方法
+    // Search parameter methods
     public void updateSearchParams(String location, String category, double radius) {
         this.getState().setLastSearchLocation(location);
         this.getState().setLastSearchCategory(category);

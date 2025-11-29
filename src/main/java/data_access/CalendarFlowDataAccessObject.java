@@ -15,11 +15,10 @@ import entity.Location;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import use_case.calendarFlow.CalendarFlowDataAccessInterface;
-
 public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInterface{
     private static final String BASE_URL = "https://app.ticketmaster.com/discovery/v2";
     private static final String EVENTS_ENDPOINT = "/events.json";
-    private static final String API_KEY = "YOUR_API_KEY_HERE";
+    private static final String API_KEY = "API_KEY";
     private final OkHttpClient client = new OkHttpClient();
 
 //    public CalendarFlowDataAccessObject() {

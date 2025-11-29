@@ -1,5 +1,6 @@
 package view;
 
+import entity.Event;
 import entity.Location;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.search.SearchController;
@@ -21,6 +22,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * View for displaying local events.
+ *
+ * CLEAN ARCHITECTURE NOTE:
+ * This is the View layer - it only knows about ViewModels and Controllers.
+ * It does NOT know about Use Cases, Entities directly, or Data Access.
+ * Communication flows: View -> Controller -> Use Case -> Presenter -> ViewModel -> View
+ */
 public class DisplayLocalEventsView extends JPanel implements PropertyChangeListener {
 
     private DisplayLocalEventsController controller;
@@ -41,6 +50,21 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
     private final JLabel emptyStateLabel = new JLabel("Choose a location and click search to see local events.", SwingConstants.CENTER);
     private static final double DEFAULT_RADIUS_KM = 50.0;
     private ViewManagerModel viewManagerModel;
+
+    // Store events for click handling - maps card index to Event
+    private List<Event> currentEvents = new ArrayList<>();
+
+    // Callback interface for event selection (Clean Architecture - Dependency Inversion)
+    private EventSelectionListener eventSelectionListener;
+
+    /**
+     * Interface for handling event selection.
+     * This follows the Dependency Inversion Principle - the View depends on an abstraction,
+     * not a concrete implementation.
+     */
+    public interface EventSelectionListener {
+        void onEventSelected(Event event);
+    }
 
     public DisplayLocalEventsView(DisplayLocalEventsViewModel viewModel) {
         this.viewModel = viewModel;
@@ -67,6 +91,7 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         calendarButton.addActionListener(e -> navigateToCalendar());
         logoutButton.addActionListener(e ->
                 JOptionPane.showMessageDialog(this, "Logout / Login UI not implemented yet."));
+        savedEventsButton.addActionListener(e -> navigateToSavedEvents());
     }
 
     public void setViewManagerModel(ViewManagerModel viewManagerModel) {
@@ -79,6 +104,22 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
     public void setController(DisplayLocalEventsController controller) {
         this.controller = controller;
+    }
+
+    /**
+     * Set the listener for event selection.
+     * This is how we handle navigation to event details while maintaining Clean Architecture.
+     */
+    public void setEventSelectionListener(EventSelectionListener listener) {
+        this.eventSelectionListener = listener;
+    }
+
+    /**
+     * Store the current events list for click handling.
+     * Called when events are loaded.
+     */
+    public void setCurrentEvents(List<Event> events) {
+        this.currentEvents = events != null ? new ArrayList<>(events) : new ArrayList<>();
     }
 
     @Override
@@ -311,6 +352,10 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         }
     }
 
+    /**
+     * Build an event card that is clickable.
+     * When clicked, it triggers the event selection listener.
+     */
     private JPanel buildEventCard(DisplayLocalEventsViewModel.EventCard cardData) {
         JPanel card = new JPanel(new BorderLayout());
         card.setBorder(BorderFactory.createCompoundBorder(
@@ -318,6 +363,33 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
                 BorderFactory.createLineBorder(new Color(230, 230, 230), 1)
         ));
         card.setBackground(Color.WHITE);
+        card.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Make the entire card clickable
+        card.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                onEventCardClicked(cardData.getId());
+            }
+
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                card.setBackground(new Color(245, 245, 245));
+                card.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createEmptyBorder(4, 4, 4, 4),
+                        BorderFactory.createLineBorder(new Color(25, 118, 210), 2)
+                ));
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                card.setBackground(Color.WHITE);
+                card.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createEmptyBorder(4, 4, 4, 4),
+                        BorderFactory.createLineBorder(new Color(230, 230, 230), 1)
+                ));
+            }
+        });
 
         JLabel pictureLabel = new JLabel("", SwingConstants.CENTER);
         pictureLabel.setPreferredSize(new Dimension(200, 110));
@@ -344,6 +416,11 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         JLabel distanceLabel = new JLabel(cardData.getDistanceText());
         distanceLabel.setForeground(new Color(33, 150, 243));
 
+        // Add "Click to view details" hint
+        JLabel clickHint = new JLabel("Click to view details →");
+        clickHint.setFont(clickHint.getFont().deriveFont(Font.ITALIC, 11f));
+        clickHint.setForeground(new Color(25, 118, 210));
+
         textPanel.add(nameLabel);
         textPanel.add(Box.createVerticalStrut(2));
         textPanel.add(addressLabel);
@@ -351,9 +428,46 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         textPanel.add(dateLabel);
         textPanel.add(Box.createVerticalStrut(4));
         textPanel.add(distanceLabel);
+        textPanel.add(Box.createVerticalStrut(4));
+        textPanel.add(clickHint);
 
         card.add(textPanel, BorderLayout.CENTER);
         return card;
+    }
+
+    /**
+     * Handle event card click - find the event and notify the listener.
+     * This method finds the event by ID and delegates to the listener.
+     */
+    private void onEventCardClicked(String eventId) {
+        System.out.println("Event card clicked: " + eventId);
+
+        // GET EVENTS FROM VIEWMODEL - THIS IS THE FIX!
+        List<Event> events = viewModel.getEvents();
+
+        System.out.println("Number of events in viewModel: " + (events != null ? events.size() : 0));
+
+        Event selectedEvent = null;
+        if (events != null) {
+            for (Event event : events) {
+                if (event.getId().equals(eventId)) {
+                    selectedEvent = event;
+                    System.out.println("Found event: " + event.getName());
+                    break;
+                }
+            }
+        }
+
+        if (selectedEvent != null && eventSelectionListener != null) {
+            eventSelectionListener.onEventSelected(selectedEvent);
+        } else {
+            if (selectedEvent == null) {
+                System.err.println("Event not found with ID: " + eventId);
+            }
+            if (eventSelectionListener == null) {
+                System.err.println("No event selection listener set!");
+            }
+        }
     }
 
     private ImageIcon loadImageIcon(String imageUrl, int width, int height) {
@@ -380,6 +494,13 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
     private void navigateToCalendar() {
         if (viewManagerModel != null) {
             viewManagerModel.setState("calendar view");
+            viewManagerModel.firePropertyChange();
+        }
+    }
+
+    private void navigateToSavedEvents() {
+        if (viewManagerModel != null) {
+            viewManagerModel.setState("save event");
             viewManagerModel.firePropertyChange();
         }
     }

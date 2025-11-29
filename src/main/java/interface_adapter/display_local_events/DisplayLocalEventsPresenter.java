@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+
 public class DisplayLocalEventsPresenter implements DisplayLocalEventsOutputBoundary {
     private final DisplayLocalEventsViewModel viewModel;
     private final ViewManagerModel viewManagerModel;
@@ -25,11 +26,14 @@ public class DisplayLocalEventsPresenter implements DisplayLocalEventsOutputBoun
         this.saveEventViewModel = saveEventViewModel;
     }
 
+
+    
     @Override
     public void presentSuccess(DisplayLocalEventsOutputData outputData) {
         List<DisplayLocalEventsViewModel.EventCard> cards = new ArrayList<>();
         Map<String, Double> distances = outputData.getEventDistances();
 
+        // Transform Event entities into EventCard view objects
         for (Event event : outputData.getEvents()) {
             String distanceText = "";
             if (distances != null && distances.containsKey(event.getId())) {
@@ -49,11 +53,15 @@ public class DisplayLocalEventsPresenter implements DisplayLocalEventsOutputBoun
             cards.add(card);
         }
 
+        // Update the ViewModel state
         viewModel.setEventCards(cards);
         viewModel.setMessage(outputData.getMessage());
         viewModel.setError("");
 
+        // Store the actual Event objects for click handling
+        viewModel.setEvents(outputData.getEvents());
 
+        // Trigger view update via ViewManagerModel
         viewManagerModel.setState(viewModel.getViewName());
         viewManagerModel.firePropertyChange();
     }
@@ -63,7 +71,7 @@ public class DisplayLocalEventsPresenter implements DisplayLocalEventsOutputBoun
         viewModel.setEventCards(List.of());
         viewModel.setMessage("");
         viewModel.setError(errorMessage != null ? errorMessage : "Unknown error");
-
+        viewModel.setEvents(List.of());
 
         viewManagerModel.setState(viewModel.getViewName());
         viewManagerModel.firePropertyChange();
