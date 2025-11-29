@@ -176,6 +176,8 @@ public class AppBuilder {
         displayLocalEventsView.setUpdateLocationController(controller);
         displayLocalEventsView.setUpdateLocationViewModel(updateLocationViewModel);
 
+        displayLocalEventsView.setUserDataAccess(userDataAccessObject);
+
         return this;
     }
 
