@@ -112,6 +112,8 @@ public class SearchBarView extends JPanel {
         this.searchController = controller;
     }
 
-
+    public void setLocation(Location location) {
+            this.location = location;
+    }
 
 }
