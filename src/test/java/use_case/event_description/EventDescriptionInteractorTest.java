@@ -1,3 +1,5 @@
+// use case code partly assisted by AI 
+
 package use_case.event_description;
 
 import data_access.InMemoryEventDataAccessObject;
