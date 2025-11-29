@@ -310,7 +310,7 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
      * Show the button in "Already Saved" state.
      */
     private void showAlreadySavedState() {
-        saveButton.setText("❤️ Saved");
+        saveButton.setText("Saved");
         saveButton.setBackground(new Color(34, 197, 94));  // Green
         saveButton.setEnabled(false);
         saveButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

@@ -102,7 +102,7 @@ public class SaveEventViewDemo {
         viewSavedButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         viewSavedButton.addActionListener(e -> {
-            saveEventsView.refreshEventsList();
+//            saveEventsView.refreshEventsList();
             cardLayout.show(mainPanel, "saved");
         });
 
