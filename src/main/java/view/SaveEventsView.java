@@ -1,18 +1,35 @@
 package view;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+
 import entity.Event;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.save_event.SaveEventController;
 import interface_adapter.save_event.SaveEventViewModel;
 import use_case.save_event.SaveEventInteractor;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 /**
  * View for displaying saved events.
@@ -20,6 +37,39 @@ import java.util.List;
  * Automatically refreshes when the view becomes visible.
  */
 public class SaveEventsView extends JPanel implements PropertyChangeListener {
+
+    private static final int HEADER_PADDING = 15;
+    private static final int HEADER_BUTTON_PADDING = 8;
+    private static final int CONTAINER_PADDING = 20;
+    private static final int SCROLL_UNIT = 16;
+    private static final int HEADER_FONT_SIZE = 20;
+    private static final int BUTTON_FONT_SIZE = 14;
+    private static final int SMALL_BUTTON_FONT_SIZE = 12;
+    private static final int EMPTY_ICON_SIZE = 48;
+    private static final int EMPTY_TITLE_SIZE = 24;
+    private static final int COUNT_FONT_SIZE = 14;
+    private static final int CARD_FONT_SIZE = 16;
+    private static final int BADGE_FONT_SIZE = 10;
+    private static final int CARD_SPACING = 12;
+    private static final int CARD_PADDING = 15;
+    private static final int MAX_CARD_HEIGHT = 120;
+    private static final int MAX_NAME_LENGTH = 50;
+    private static final int MAX_ADDRESS_LENGTH = 60;
+
+    private static final Color BACKGROUND_COLOR = new Color(245, 247, 250);
+    private static final Color HEADER_COLOR = new Color(25, 118, 210);
+    private static final Color HEADER_HOVER = new Color(21, 101, 192);
+    private static final Color PRIMARY_BLUE = new Color(59, 130, 246);
+    private static final Color BADGE_BLUE = new Color(219, 234, 254);
+    private static final Color CARD_BORDER = new Color(230, 230, 230);
+    private static final Color CARD_HOVER = new Color(250, 250, 250);
+    private static final Color ERROR_RED = new Color(220, 53, 69);
+    private static final Color ERROR_BG = new Color(255, 240, 240);
+    private static final Color TEXT_DARK = new Color(30, 30, 30);
+    private static final Color TEXT_GRAY = new Color(100, 100, 100);
+    private static final Color TEXT_LIGHT_GRAY = new Color(120, 120, 120);
+    private static final Color TEXT_MEDIUM_GRAY = new Color(150, 150, 150);
+    private static final Color TEXT_DARK_GRAY = new Color(50, 50, 50);
 
     private final String viewName = "save event";
     private final SaveEventViewModel viewModel;
@@ -29,52 +79,51 @@ public class SaveEventsView extends JPanel implements PropertyChangeListener {
 
     private final JPanel eventsContainer = new JPanel();
     private final JButton backButton = new JButton("<- Back to Events");
-    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' h:mm a");
+    private final DateTimeFormatter dateFormatter =
+            DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' h:mm a");
 
     public SaveEventsView(SaveEventViewModel viewModel) {
         this.viewModel = viewModel;
         this.viewModel.addPropertyChangeListener(this);
 
         setLayout(new BorderLayout());
-        setBackground(new Color(245, 247, 250));
+        setBackground(BACKGROUND_COLOR);
 
-        // Header
         add(createHeader(), BorderLayout.NORTH);
 
-        // Events container with scroll
         eventsContainer.setLayout(new BoxLayout(eventsContainer, BoxLayout.Y_AXIS));
-        eventsContainer.setBackground(new Color(245, 247, 250));
-        eventsContainer.setBorder(new EmptyBorder(20, 20, 20, 20));
+        eventsContainer.setBackground(BACKGROUND_COLOR);
+        eventsContainer.setBorder(new EmptyBorder(CONTAINER_PADDING, CONTAINER_PADDING,
+                CONTAINER_PADDING, CONTAINER_PADDING));
 
-        JScrollPane scrollPane = new JScrollPane(eventsContainer);
+        final JScrollPane scrollPane = new JScrollPane(eventsContainer);
         scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(SCROLL_UNIT);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Auto-refresh when view becomes visible
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
-            public void componentShown(java.awt.event.ComponentEvent e) {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
                 renderSavedEvents();
             }
         });
 
-        // Initial render
         renderSavedEvents();
     }
 
     private JPanel createHeader() {
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(new Color(25, 118, 210));
-        header.setBorder(new EmptyBorder(15, 20, 15, 20));
+        final JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(HEADER_COLOR);
+        header.setBorder(new EmptyBorder(HEADER_PADDING, CONTAINER_PADDING,
+                HEADER_PADDING, CONTAINER_PADDING));
 
-        // Back button
-        backButton.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        backButton.setFont(new Font("Segoe UI", Font.PLAIN, BUTTON_FONT_SIZE));
         backButton.setForeground(Color.WHITE);
-        backButton.setBackground(new Color(25, 118, 210));
-        backButton.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        backButton.setBackground(HEADER_COLOR);
+        backButton.setBorder(BorderFactory.createEmptyBorder(HEADER_BUTTON_PADDING,
+                HEADER_PADDING, HEADER_BUTTON_PADDING, HEADER_PADDING));
         backButton.setFocusPainted(false);
         backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         backButton.setOpaque(true);
@@ -82,37 +131,36 @@ public class SaveEventsView extends JPanel implements PropertyChangeListener {
 
         backButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void mouseEntered(java.awt.event.MouseEvent e) {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
                 backButton.setContentAreaFilled(true);
-                backButton.setBackground(new Color(21, 101, 192));
+                backButton.setBackground(HEADER_HOVER);
             }
 
             @Override
-            public void mouseExited(java.awt.event.MouseEvent e) {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
                 backButton.setContentAreaFilled(false);
             }
         });
 
-        backButton.addActionListener(e -> navigateBack());
+        backButton.addActionListener(evt -> navigateBack());
         header.add(backButton, BorderLayout.WEST);
 
-        // Title
-        JLabel title = new JLabel("Your Saved Events");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        final JLabel title = new JLabel("Your Saved Events");
+        title.setFont(new Font("Segoe UI", Font.BOLD, HEADER_FONT_SIZE));
         title.setForeground(Color.WHITE);
         title.setHorizontalAlignment(SwingConstants.CENTER);
         header.add(title, BorderLayout.CENTER);
 
-        // Refresh button
-        JButton refreshButton = new JButton("Refresh");
-        refreshButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        final JButton refreshButton = new JButton("Refresh");
+        refreshButton.setFont(new Font("Segoe UI", Font.PLAIN, SMALL_BUTTON_FONT_SIZE));
         refreshButton.setForeground(Color.WHITE);
-        refreshButton.setBackground(new Color(25, 118, 210));
-        refreshButton.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        refreshButton.setBackground(HEADER_COLOR);
+        refreshButton.setBorder(BorderFactory.createEmptyBorder(HEADER_BUTTON_PADDING,
+                HEADER_PADDING, HEADER_BUTTON_PADDING, HEADER_PADDING));
         refreshButton.setFocusPainted(false);
         refreshButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         refreshButton.setContentAreaFilled(false);
-        refreshButton.addActionListener(e -> renderSavedEvents());
+        refreshButton.addActionListener(evt -> renderSavedEvents());
         header.add(refreshButton, BorderLayout.EAST);
 
         return header;
@@ -134,38 +182,32 @@ public class SaveEventsView extends JPanel implements PropertyChangeListener {
 
         List<Event> savedEvents = null;
         if (saveEventInteractor != null) {
-            try {
-                savedEvents = saveEventInteractor.getSavedEvents();
-                System.out.println("Loaded " + (savedEvents != null ? savedEvents.size() : 0) + " saved events");
-            } catch (Exception e) {
-                System.err.println("Error getting saved events: " + e.getMessage());
-            }
+            savedEvents = saveEventInteractor.getSavedEvents();
+            System.out.println("Loaded " + (savedEvents != null ? savedEvents.size() : 0)
+                    + " saved events");
         }
 
         if (savedEvents == null || savedEvents.isEmpty()) {
             renderEmptyState();
-        } else {
-            // Reset to vertical BoxLayout for event cards
+        }
+        else {
             eventsContainer.setLayout(new BoxLayout(eventsContainer, BoxLayout.Y_AXIS));
 
-            // Add count label
-            JLabel countLabel = new JLabel("You have " + savedEvents.size() + " saved event" +
-                    (savedEvents.size() == 1 ? "" : "s"));
-            countLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            countLabel.setForeground(new Color(100, 100, 100));
+            final JLabel countLabel = new JLabel("You have " + savedEvents.size() + " saved event"
+                    + (savedEvents.size() == 1 ? "" : "s"));
+            countLabel.setFont(new Font("Segoe UI", Font.PLAIN, COUNT_FONT_SIZE));
+            countLabel.setForeground(TEXT_GRAY);
             countLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-            countLabel.setBorder(new EmptyBorder(0, 0, 15, 0));
+            countLabel.setBorder(new EmptyBorder(0, 0, HEADER_PADDING, 0));
             eventsContainer.add(countLabel);
 
-            // Add event cards vertically
             for (Event event : savedEvents) {
-                JPanel card = createEventCard(event);
+                final JPanel card = createEventCard(event);
                 card.setAlignmentX(Component.LEFT_ALIGNMENT);
                 eventsContainer.add(card);
-                eventsContainer.add(Box.createVerticalStrut(12));
+                eventsContainer.add(Box.createVerticalStrut(CARD_SPACING));
             }
 
-            // Add glue at the end to push everything to the top
             eventsContainer.add(Box.createVerticalGlue());
         }
 
@@ -176,50 +218,50 @@ public class SaveEventsView extends JPanel implements PropertyChangeListener {
     private void renderEmptyState() {
         eventsContainer.setLayout(new GridBagLayout());
 
-        JPanel emptyPanel = new JPanel();
+        final JPanel emptyPanel = new JPanel();
         emptyPanel.setLayout(new BoxLayout(emptyPanel, BoxLayout.Y_AXIS));
-        emptyPanel.setBackground(new Color(245, 247, 250));
-        emptyPanel.setBorder(new EmptyBorder(50, 50, 50, 50));
+        emptyPanel.setBackground(BACKGROUND_COLOR);
+        emptyPanel.setBorder(new EmptyBorder(MAX_NAME_LENGTH, MAX_NAME_LENGTH,
+                MAX_NAME_LENGTH, MAX_NAME_LENGTH));
 
-        // Icon
-        JLabel iconLabel = new JLabel("*", SwingConstants.CENTER);
-        iconLabel.setFont(new Font("Segoe UI", Font.BOLD, 48));
-        iconLabel.setForeground(new Color(150, 150, 150));
+        final JLabel iconLabel = new JLabel("📅", SwingConstants.CENTER);
+        iconLabel.setFont(new Font("Segoe UI", Font.BOLD, EMPTY_ICON_SIZE));
+        iconLabel.setForeground(TEXT_MEDIUM_GRAY);
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Title
-        JLabel titleLabel = new JLabel("No Saved Events Yet");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        titleLabel.setForeground(new Color(50, 50, 50));
+        final JLabel titleLabel = new JLabel("No Saved Events Yet");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, EMPTY_TITLE_SIZE));
+        titleLabel.setForeground(TEXT_DARK_GRAY);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Description
-        JLabel descLabel = new JLabel("<html><div style='text-align: center;'>Events you save will appear here.<br>Click 'Save Event' on any event to add it!</div></html>");
-        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        descLabel.setForeground(new Color(120, 120, 120));
+        final JLabel descLabel = new JLabel("<html><div style='text-align: center;'>"
+                + "Events you save will appear here.<br>"
+                + "Click 'Save Event' on any event to add it!</div></html>");
+        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, COUNT_FONT_SIZE));
+        descLabel.setForeground(TEXT_LIGHT_GRAY);
         descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         descLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Back to events button
-        JButton browseButton = new JButton("Browse Events");
-        browseButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        final JButton browseButton = new JButton("Browse Events");
+        browseButton.setFont(new Font("Segoe UI", Font.BOLD, BUTTON_FONT_SIZE));
         browseButton.setForeground(Color.WHITE);
-        browseButton.setBackground(new Color(59, 130, 246));
-        browseButton.setBorder(new EmptyBorder(12, 24, 12, 24));
+        browseButton.setBackground(PRIMARY_BLUE);
+        browseButton.setBorder(new EmptyBorder(CARD_SPACING, EMPTY_TITLE_SIZE,
+                CARD_SPACING, EMPTY_TITLE_SIZE));
         browseButton.setFocusPainted(false);
         browseButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         browseButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        browseButton.addActionListener(e -> navigateBack());
+        browseButton.addActionListener(evt -> navigateBack());
 
         emptyPanel.add(iconLabel);
-        emptyPanel.add(Box.createVerticalStrut(20));
+        emptyPanel.add(Box.createVerticalStrut(CONTAINER_PADDING));
         emptyPanel.add(titleLabel);
-        emptyPanel.add(Box.createVerticalStrut(12));
+        emptyPanel.add(Box.createVerticalStrut(CARD_SPACING));
         emptyPanel.add(descLabel);
-        emptyPanel.add(Box.createVerticalStrut(25));
+        emptyPanel.add(Box.createVerticalStrut(EMPTY_TITLE_SIZE + 1));
         emptyPanel.add(browseButton);
 
-        GridBagConstraints gbc = new GridBagConstraints();
+        final GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 1.0;
@@ -230,131 +272,108 @@ public class SaveEventsView extends JPanel implements PropertyChangeListener {
     }
 
     private JPanel createEventCard(Event event) {
-        JPanel card = new JPanel(new BorderLayout(15, 0));
+        final JPanel card = new JPanel(new BorderLayout(HEADER_PADDING, 0));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(230, 230, 230)),
-                new EmptyBorder(15, 15, 15, 15)
+                BorderFactory.createLineBorder(CARD_BORDER),
+                new EmptyBorder(CARD_PADDING, CARD_PADDING, CARD_PADDING, CARD_PADDING)
         ));
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, MAX_CARD_HEIGHT));
 
-        // Left side - Event info
-        JPanel infoPanel = new JPanel();
+        final JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanel.setOpaque(false);
 
-        // Event name (truncated if too long)
-        String eventName = truncateText(event.getName(), 50);
-        JLabel nameLabel = new JLabel(eventName);
-        nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        nameLabel.setForeground(new Color(30, 30, 30));
+        final String eventName = truncateText(event.getName(), MAX_NAME_LENGTH);
+        final JLabel nameLabel = new JLabel(eventName);
+        nameLabel.setFont(new Font("Segoe UI", Font.BOLD, CARD_FONT_SIZE));
+        nameLabel.setForeground(TEXT_DARK);
         nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Category badge
-        JLabel categoryLabel = new JLabel(event.getCategory().getDisplayName());
-        categoryLabel.setFont(new Font("Segoe UI", Font.BOLD, 10));
-        categoryLabel.setForeground(new Color(59, 130, 246));
+        final JLabel categoryLabel = new JLabel(event.getCategory().getDisplayName());
+        categoryLabel.setFont(new Font("Segoe UI", Font.BOLD, BADGE_FONT_SIZE));
+        categoryLabel.setForeground(PRIMARY_BLUE);
         categoryLabel.setOpaque(true);
-        categoryLabel.setBackground(new Color(219, 234, 254));
-        categoryLabel.setBorder(new EmptyBorder(2, 8, 2, 8));
+        categoryLabel.setBackground(BADGE_BLUE);
+        categoryLabel.setBorder(new EmptyBorder(2, HEADER_BUTTON_PADDING,
+                2, HEADER_BUTTON_PADDING));
         categoryLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Location
-        String address = event.getLocation() != null ? event.getLocation().getAddress() : "Location not available";
-        String truncatedAddress = truncateText(address, 60);
-        JLabel locationLabel = new JLabel(truncatedAddress);
-        locationLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        locationLabel.setForeground(new Color(100, 100, 100));
+        final String address = event.getLocation() != null
+                ? event.getLocation().getAddress() : "Location not available";
+        final String truncatedAddress = truncateText(address, MAX_ADDRESS_LENGTH);
+        final JLabel locationLabel = new JLabel(truncatedAddress);
+        locationLabel.setFont(new Font("Segoe UI", Font.PLAIN, SMALL_BUTTON_FONT_SIZE));
+        locationLabel.setForeground(TEXT_GRAY);
         locationLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Date/Time
-        String dateTime = event.getStartTime() != null ?
-                event.getStartTime().format(dateFormatter) : "Date not available";
-        JLabel dateLabel = new JLabel(dateTime);
-        dateLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        dateLabel.setForeground(new Color(100, 100, 100));
+        final String dateTimeStr = event.getStartTime() != null
+                ? event.getStartTime().format(dateFormatter) : "Date not available";
+        final JLabel dateLabel = new JLabel(dateTimeStr);
+        dateLabel.setFont(new Font("Segoe UI", Font.PLAIN, SMALL_BUTTON_FONT_SIZE));
+        dateLabel.setForeground(TEXT_GRAY);
         dateLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        final int spacing = 5;
         infoPanel.add(nameLabel);
-        infoPanel.add(Box.createVerticalStrut(5));
+        infoPanel.add(Box.createVerticalStrut(spacing));
         infoPanel.add(categoryLabel);
-        infoPanel.add(Box.createVerticalStrut(8));
+        infoPanel.add(Box.createVerticalStrut(HEADER_BUTTON_PADDING));
         infoPanel.add(locationLabel);
-        infoPanel.add(Box.createVerticalStrut(3));
+        infoPanel.add(Box.createVerticalStrut(spacing / 2));
         infoPanel.add(dateLabel);
 
         card.add(infoPanel, BorderLayout.CENTER);
 
-        // Right side - Remove button
-        JButton removeButton = new JButton("Remove");
-        removeButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        removeButton.setForeground(new Color(220, 53, 69));
+        final JButton removeButton = new JButton("Remove");
+        removeButton.setFont(new Font("Segoe UI", Font.PLAIN, SMALL_BUTTON_FONT_SIZE));
+        removeButton.setForeground(ERROR_RED);
         removeButton.setBackground(Color.WHITE);
         removeButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 53, 69)),
-                new EmptyBorder(8, 12, 8, 12)
+                BorderFactory.createLineBorder(ERROR_RED),
+                new EmptyBorder(HEADER_BUTTON_PADDING, CARD_SPACING,
+                        HEADER_BUTTON_PADDING, CARD_SPACING)
         ));
         removeButton.setFocusPainted(false);
         removeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         removeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                removeButton.setBackground(new Color(255, 240, 240));
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                removeButton.setBackground(ERROR_BG);
             }
 
             @Override
-            public void mouseExited(java.awt.event.MouseEvent e) {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
                 removeButton.setBackground(Color.WHITE);
             }
         });
 
-        removeButton.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(this,
-                    "Remove \"" + event.getName() + "\" from saved events?",
-                    "Confirm Remove",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE);
+        removeButton.addActionListener(evt -> handleRemoveEvent(event));
 
-            if (confirm == JOptionPane.YES_OPTION) {
-                if (saveEventInteractor != null) {
-                    try {
-                        saveEventInteractor.unsaveEvent(event);
-                        renderSavedEvents();  // Refresh the list
-                        JOptionPane.showMessageDialog(this,
-                                "Event removed from saved events.",
-                                "Removed", JOptionPane.INFORMATION_MESSAGE);
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this,
-                                "Could not remove event: " + ex.getMessage(),
-                                "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }
-        });
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        final JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setOpaque(false);
         buttonPanel.add(removeButton);
         card.add(buttonPanel, BorderLayout.EAST);
 
-        // Add hover effect to card
         card.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                card.setBackground(new Color(250, 250, 250));
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                card.setBackground(CARD_HOVER);
                 card.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(new Color(59, 130, 246)),
-                        new EmptyBorder(15, 15, 15, 15)
+                        BorderFactory.createLineBorder(PRIMARY_BLUE),
+                        new EmptyBorder(CARD_PADDING, CARD_PADDING,
+                                CARD_PADDING, CARD_PADDING)
                 ));
             }
 
             @Override
-            public void mouseExited(java.awt.event.MouseEvent e) {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
                 card.setBackground(Color.WHITE);
                 card.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(new Color(230, 230, 230)),
-                        new EmptyBorder(15, 15, 15, 15)
+                        BorderFactory.createLineBorder(CARD_BORDER),
+                        new EmptyBorder(CARD_PADDING, CARD_PADDING,
+                                CARD_PADDING, CARD_PADDING)
                 ));
             }
         });
@@ -362,16 +381,39 @@ public class SaveEventsView extends JPanel implements PropertyChangeListener {
         return card;
     }
 
-    /**
-     * Truncate text to a maximum length, adding "..." if truncated.
-     */
-    private String truncateText(String text, int maxLength) {
-        if (text == null) return "";
-        if (text.length() <= maxLength) return text;
-        return text.substring(0, maxLength - 3) + "...";
+    private void handleRemoveEvent(Event event) {
+        final int confirm = JOptionPane.showConfirmDialog(this,
+                "Remove \"" + event.getName() + "\" from saved events?",
+                "Confirm Remove",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (confirm == JOptionPane.YES_OPTION && saveEventInteractor != null) {
+            saveEventInteractor.unsaveEvent(event);
+            renderSavedEvents();
+            JOptionPane.showMessageDialog(this,
+                    "Event removed from saved events.",
+                    "Removed", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
-    // Setters for dependency injection
+    /**
+     * Truncate text to a maximum length, adding "..." if truncated.
+     * @param text the text to truncate
+     * @param maxLength the maximum length
+     * @return the truncated text
+     */
+    private String truncateText(String text, int maxLength) {
+        if (text == null) {
+            return "";
+        }
+        if (text.length() <= maxLength) {
+            return text;
+        }
+        final int truncateLength = 3;
+        return text.substring(0, maxLength - truncateLength) + "...";
+    }
+
     public void setViewManagerModel(ViewManagerModel viewManagerModel) {
         this.viewManagerModel = viewManagerModel;
     }
@@ -386,7 +428,6 @@ public class SaveEventsView extends JPanel implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        // Refresh when view model changes
         renderSavedEvents();
     }
 
