@@ -253,6 +253,7 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         UpdateLocationState state = updateLocationViewModel.getState();
         if (state.isSuccess()) {
             userLocation = state.getLocation();
+            searchBarView.setLocation(userLocation);
             String displayAddress = shortenAddress(state.getAddress());
             currentLocationLabel.setText(displayAddress);
             currentLocationLabel.setForeground(new Color(34, 197, 94));
@@ -379,8 +380,7 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         searchLabel.setForeground(Color.WHITE);
         nameSearchPanel.add(searchLabel);
 
-        Location defaultLoc = userLocation != null ? userLocation : new Location("Toronto", 43.6532, -79.3832);
-        searchBarView = new SearchBarView("Event name...", defaultLoc);
+        searchBarView = new SearchBarView("Event name...", new Location("Toronto, ON", 43.6426, 79.3871));
         searchBarView.setPreferredSize(new Dimension(180, 32));
         nameSearchPanel.add(searchBarView);
 
