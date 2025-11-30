@@ -49,7 +49,6 @@ import interface_adapter.save_event.SaveEventViewModel;
 import interface_adapter.display_local_events.DisplayLocalEventsController;
 import interface_adapter.display_local_events.DisplayLocalEventsPresenter;
 import interface_adapter.display_local_events.DisplayLocalEventsViewModel;
-import interface_adapter.ViewManagerModel;
 
 import use_case.change_password.ChangePasswordInputBoundary;
 import use_case.change_password.ChangePasswordInteractor;
@@ -69,7 +68,6 @@ import use_case.search_event_by_name.SearchEventByNameOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
-import view.*;
 
 import use_case.display_local_events.DisplayLocalEventsInputBoundary;
 import use_case.display_local_events.DisplayLocalEventsInteractor;
@@ -85,11 +83,6 @@ import use_case.update_location.UpdateLocationInputBoundary;
 import use_case.update_location.UpdateLocationInteractor;
 import use_case.update_location.UpdateLocationOutputBoundary;
 
-import view.LoggedInView;
-import view.LoginView;
-import view.SignupView;
-import view.ViewManager;
-import view.DisplayLocalEventsView;
 import use_case.save_event.SaveEventInputBoundary;
 import use_case.save_event.SaveEventInteractor;
 import use_case.save_event.SaveEventOutputBoundary;
@@ -100,7 +93,6 @@ import java.awt.*;
 /**
  * AppBuilder - Constructs and wires together all components of the application.
  */
-
 public class AppBuilder {
     private EventDescriptionViewModel eventDescriptionViewModel;
     private EventDescriptionView eventDescriptionView;
@@ -158,14 +150,12 @@ public class AppBuilder {
 
         displayLocalEventsView.setUpdateLocationController(controller);
         displayLocalEventsView.setUpdateLocationViewModel(updateLocationViewModel);
-
         displayLocalEventsView.setUserDataAccess(userDataAccessObject);
 
         return this;
     }
 
-
-        public AppBuilder addSignupView() {
+    public AppBuilder addSignupView() {
         signupViewModel = new SignupViewModel();
         signupView = new SignupView(signupViewModel);
         cardPanel.add(signupView, signupView.getViewName());
@@ -189,16 +179,17 @@ public class AppBuilder {
     public AppBuilder addCalendarViews() {
         calendarFlowViewModel = new CalendarFlowViewModel();
         eventListByDateView = new EventListByDateView(calendarFlowViewModel);
+        eventListByDateView.setViewManagerModel(viewManagerModel);
         calendarView = new CalendarView();
+        calendarView.setViewManagerModel(viewManagerModel);
         cardPanel.add(calendarView, "calendar view");
-        cardPanel.add(eventListByDateView, calendarFlowViewModel.getViewName());
+        cardPanel.add(eventListByDateView, eventListByDateView.getViewName());
         return this;
     }
 
     public AppBuilder addDisplayLocalEventsView() {
         displayLocalEventsViewModel = new DisplayLocalEventsViewModel();
         displayLocalEventsView = new DisplayLocalEventsView(displayLocalEventsViewModel);
-        displayLocalEventsView.setViewManagerModel(viewManagerModel);
         displayLocalEventsView.setViewManagerModel(viewManagerModel);
         displayLocalEventsView.setCalendarView(calendarView);
         cardPanel.add(displayLocalEventsView, displayLocalEventsView.getViewName());
@@ -215,7 +206,7 @@ public class AppBuilder {
     public AppBuilder addSaveEventView() {
         saveEventViewModel = new SaveEventViewModel();
         saveEventsView = new SaveEventsView(saveEventViewModel);
-        saveEventsView.setViewManagerModel(viewManagerModel);  // ADD THIS!
+        saveEventsView.setViewManagerModel(viewManagerModel);
         cardPanel.add(saveEventsView, saveEventsView.getViewName());
         return this;
     }
@@ -241,8 +232,7 @@ public class AppBuilder {
             saveEventsView.setSaveEventInteractor(saveEventInteractor);
         }
 
-        // Add after the saveEventController wiring:
-        if (saveEventInteractor != null) {
+        if (eventDescriptionView != null && saveEventInteractor != null) {
             eventDescriptionView.setSaveEventInteractor(saveEventInteractor);
         }
 
@@ -329,6 +319,30 @@ public class AppBuilder {
         calendarView.setEventController(calendarController);
         eventListByDateView.setController(calendarController);
 
+        // Wire up navigation from event list (calendar) to event description
+        eventListByDateView.setEventSelectionListener(new EventListByDateView.EventSelectionListener() {
+            @Override
+            public void onEventSelected(Event event) {
+                // Display the event in EventDescriptionView
+                eventDescriptionView.displayEvent(event);
+
+                // Set previous view so back button returns to event list
+                eventDescriptionView.setPreviousView("event list by date");
+
+                // Calculate distance if user location is available
+                Location userLocation = displayLocalEventsView.getCurrentLocationForOthers();
+                if (userLocation != null && event.getLocation() != null) {
+                    double distance = event.calculateDistanceTo(userLocation);
+                    eventDescriptionView.setDistanceText(String.format("%.1f km from your location", distance));
+                } else {
+                    eventDescriptionView.setDistanceText("Distance unavailable");
+                }
+
+                // Navigate to event description view
+                viewManagerModel.setState(eventDescriptionView.getViewName());
+                viewManagerModel.firePropertyChange();
+            }
+        });
 
         return this;
     }
@@ -373,10 +387,6 @@ public class AppBuilder {
 
     /**
      * Add Event Description View.
-     *
-     * CLEAN ARCHITECTURE NOTE:
-     * The View is created with its ViewModel.
-     * The View only knows about the ViewModel, not about Use Cases or Data Access.
      */
     public AppBuilder addEventDescriptionView() {
         eventDescriptionViewModel = new EventDescriptionViewModel();
@@ -388,22 +398,6 @@ public class AppBuilder {
 
     /**
      * Add Event Description Use Case and wire up event navigation.
-     *
-     * CLEAN ARCHITECTURE NOTE:
-     * This method demonstrates the complete wiring of Clean Architecture:
-     *
-     * 1. Create the Use Case (Interactor) with its dependencies:
-     *    - Data Access (injected via interface)
-     *    - Output Boundary (Presenter implements this interface)
-     *
-     * 2. Create the Controller with the Use Case (via Input Boundary interface)
-     *
-     * 3. Wire the View to use the Controller
-     *
-     * 4. Set up navigation using an EventSelectionListener
-     *    - This follows the Dependency Inversion Principle
-     *    - The View depends on an abstraction (listener interface)
-     *    - The concrete implementation is injected here
      */
     public AppBuilder addEventDescriptionUseCase() {
         DistanceCalculator distanceCalculator = new HaversineDistanceCalculator();
@@ -423,12 +417,14 @@ public class AppBuilder {
         }
 
         // Set up the event selection listener for navigation from DisplayLocalEventsView
-        // This is where we connect the "click on event card" action to the navigation
         displayLocalEventsView.setEventSelectionListener(new DisplayLocalEventsView.EventSelectionListener() {
             @Override
             public void onEventSelected(Event event) {
                 // Store the event in the view for display
                 eventDescriptionView.displayEvent(event);
+
+                // Set previous view so back button returns to dashboard
+                eventDescriptionView.setPreviousView("display local events");
 
                 // Calculate and set distance
                 Location userLocation = displayLocalEventsView.getCurrentLocationForOthers();

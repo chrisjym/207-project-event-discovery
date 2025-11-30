@@ -1,6 +1,7 @@
 package view;
 
 import entity.Event;
+import entity.Location;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.event_description.EventDescriptionViewModel;
 import interface_adapter.save_event.SaveEventController;
@@ -25,15 +26,18 @@ import java.time.format.DateTimeFormatter;
  * - Displays event image
  * - Shows distance from user's location
  * - Save Event button that shows "Already Saved" if event is already saved
- * - Back navigation to events list
+ * - Back navigation to previous view (events list or calendar event list)
  */
 public class EventDescriptionView extends JPanel implements PropertyChangeListener {
 
     private final EventDescriptionViewModel viewModel;
     private ViewManagerModel viewManagerModel;
     private SaveEventController saveEventController;
-    private SaveEventInteractor saveEventInteractor;  // For checking if event is already saved
+    private SaveEventInteractor saveEventInteractor;
     private Event currentEvent;
+
+    // Track which view we came from for back navigation
+    private String previousViewName = "display local events";
 
     // UI Components
     private final JLabel titleLabel = new JLabel("", SwingConstants.LEFT);
@@ -43,7 +47,7 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
     private final JTextArea descriptionArea = new JTextArea();
     private final JLabel distanceLabel = new JLabel();
     private final JLabel imageLabel = new JLabel();
-    private final JButton backButton = new JButton("← Back to Events");
+    private final JButton backButton = new JButton("<- Back");
     private final JButton saveButton = new JButton("Save Event");
 
     private final DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' h:mm a");
@@ -160,15 +164,15 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
         panel.add(Box.createVerticalStrut(20));
 
         // Date/Time section
-        panel.add(createInfoRow("📅 Date & Time", dateTimeLabel));
+        panel.add(createInfoRow("Date & Time", dateTimeLabel));
         panel.add(Box.createVerticalStrut(15));
 
         // Location section
-        panel.add(createInfoRow("📍 Location", addressLabel));
+        panel.add(createInfoRow("Location", addressLabel));
         panel.add(Box.createVerticalStrut(15));
 
         // Distance section
-        panel.add(createInfoRow("📏 Distance", distanceLabel));
+        panel.add(createInfoRow("Distance", distanceLabel));
         panel.add(Box.createVerticalStrut(25));
 
         // Description section
@@ -249,6 +253,14 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
     }
 
     /**
+     * Set the previous view name for back navigation.
+     * Called before navigating to this view.
+     */
+    public void setPreviousView(String viewName) {
+        this.previousViewName = viewName;
+    }
+
+    /**
      * Display an event's details.
      * This method is called when navigating to this view with an event.
      */
@@ -311,7 +323,7 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
      */
     private void showAlreadySavedState() {
         saveButton.setText("Saved");
-        saveButton.setBackground(new Color(34, 197, 94));  // Green
+        saveButton.setBackground(new Color(34, 197, 94));
         saveButton.setEnabled(false);
         saveButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
@@ -321,7 +333,7 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
      */
     private void resetSaveButton() {
         saveButton.setText("Save Event");
-        saveButton.setBackground(new Color(59, 130, 246));  // Blue
+        saveButton.setBackground(new Color(59, 130, 246));
         saveButton.setEnabled(true);
         saveButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
@@ -374,9 +386,13 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
         }.execute();
     }
 
+    /**
+     * Navigate back to the previous view.
+     * This respects which view the user came from.
+     */
     private void navigateBack() {
         if (viewManagerModel != null) {
-            viewManagerModel.setState("display local events");
+            viewManagerModel.setState(previousViewName);
             viewManagerModel.firePropertyChange();
         }
     }
@@ -384,9 +400,8 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
     private void saveEvent() {
         if (currentEvent != null && saveEventController != null) {
             saveEventController.saveEvent(currentEvent);
-            showAlreadySavedState();  // Update button to show saved state
+            showAlreadySavedState();
 
-            // Show confirmation dialog
             JOptionPane.showMessageDialog(this,
                     "Event saved! You can view it in your Saved Events.",
                     "Event Saved", JOptionPane.INFORMATION_MESSAGE);
@@ -412,7 +427,6 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        // Update from ViewModel if needed
         if (viewModel.getErrorMessage() != null && !viewModel.getErrorMessage().isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     viewModel.getErrorMessage(),
