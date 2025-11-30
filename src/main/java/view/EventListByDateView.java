@@ -96,7 +96,6 @@ public class EventListByDateView extends JPanel implements PropertyChangeListene
         }
 
         backButton.addActionListener(e -> {
-            System.out.println("Back button pressed");
             if (calendarFlowController != null) {
                 calendarFlowController.switchToDashboardView();
             }

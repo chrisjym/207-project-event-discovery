@@ -83,7 +83,6 @@ public class FileSavedEventsDataAccessObject implements SaveEventDataAccessInter
                 }
             }
 
-            System.out.println("Loaded saved events for " + savedEventsByUser.size() + " users");
 
         } catch (IOException ex) {
             System.err.println("Error reading saved events file: " + ex.getMessage());
@@ -140,8 +139,6 @@ public class FileSavedEventsDataAccessObject implements SaveEventDataAccessInter
                     writer.newLine();
                 }
             }
-
-            System.out.println("Saved events to file");
 
         } catch (IOException ex) {
             System.err.println("Error saving events file: " + ex.getMessage());

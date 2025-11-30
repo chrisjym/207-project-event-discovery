@@ -133,7 +133,6 @@ public class SaveButtonView extends JPanel {
 
     private void handleSaveAction() {
         if (saveButtonController != null && event != null) {
-            System.out.println(YIPPEE_MESSAGE);
             saveButtonController.saveEvent(event);
             saveButton.setText(SAVED_BUTTON_TEXT);
             saveButton.setEnabled(false);

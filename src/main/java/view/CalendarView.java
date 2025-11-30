@@ -143,7 +143,6 @@ public class  CalendarView extends JPanel implements ActionListener {
     }
 
     public void getSelectedDay(LocalDate date){
-        System.out.println("Selected day: " + date.toString());
         if (calendarFlowController != null){
             calendarFlowController.execute(date, userLocation, searchRadiusKm);
         }

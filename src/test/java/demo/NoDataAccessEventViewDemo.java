@@ -87,6 +87,5 @@ public class NoDataAccessEventViewDemo {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
-        System.out.println("Testing switchToDashboardView...");
     }
 }
