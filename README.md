@@ -8,6 +8,7 @@
 - [Contributors](#contributors)
 - [PR Style](#style)
 - [Setup](#setup)
+- [Features](#features)
 
 
 <h1></h1>
@@ -15,11 +16,8 @@
 # Overview:
 Event Gate: This project acts like an alternative to Ticketmaster, allowing users to search for local events, view them through a calendar, and saving these events into memory for viewing at later times.
 
-# TODOs
 
-
-
-# File Structure
+# Features
 - Users can create accounts with a personal username and password to be stored into local memory
 - Users can search for events near them based on location
 - Users can categorize the events they search for based on specific categories
