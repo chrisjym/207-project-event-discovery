@@ -1,44 +1,48 @@
 package data_access;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
 import java.time.LocalDate;
-
-import entity.EventCategory;
-import okhttp3.*;
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
-import entity.Event;
-import entity.Location;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import entity.Event;
+import entity.EventCategory;
+import entity.Location;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import use_case.calendarFlow.CalendarFlowDataAccessInterface;
-public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInterface{
+
+public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInterface {
     private static final String BASE_URL = "https://app.ticketmaster.com/discovery/v2";
     private static final String EVENTS_ENDPOINT = "/events.json";
     private static final String API_KEY = "oL2pW4zAlAZvhBAhPNi5mNYvS7OsBM9J";
     private final OkHttpClient client = new OkHttpClient();
 
     /**
-     * Search events by date
+     * Search events by date.
      * @param date the selected specific date
      * @param location the user's location
      * @param radiusKm the search radius in kilometers
      */
     @Override
     public List<Event> getEventsByDate(LocalDate date, Location location, double radiusKm) {
-        List<Event> events = new ArrayList<>();
-
-        HttpUrl.Builder urlBuilder = HttpUrl
+        final HttpUrl.Builder urlBuilder = HttpUrl
                 .parse(BASE_URL + EVENTS_ENDPOINT)
                 .newBuilder()
                 .addQueryParameter("apikey", API_KEY);
 
-        ZonedDateTime startZdt = date.atStartOfDay(ZoneOffset.UTC);//LocalDate with time 00:00
-        ZonedDateTime endZdt = date.atTime(23, 59, 59).atZone(ZoneOffset.UTC);//LocalDate with time 23:59
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;//a converter that convert time in timezone to string
+        final ZonedDateTime startZdt = date.atStartOfDay(ZoneOffset.UTC);
+        final ZonedDateTime endZdt = date.atTime(23, 59, 59).atZone(ZoneOffset.UTC);
+        final DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
 
         urlBuilder.addQueryParameter("startDateTime", formatter.format(startZdt));
         urlBuilder.addQueryParameter("endDateTime", formatter.format(endZdt));
@@ -48,7 +52,7 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
         urlBuilder.addQueryParameter("unit", "km");
         urlBuilder.addQueryParameter("size", "50");
 
-        String url = urlBuilder.build().toString();
+        final String url = urlBuilder.build().toString();
         return fetchEvents(url);
     }
 

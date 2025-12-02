@@ -1,9 +1,9 @@
 package use_case.calendarFlow;
 
-import entity.Event;
-
 import java.time.LocalDate;
 import java.util.List;
+
+import entity.Event;
 
 public class CalendarFlowInteractor implements CalendarFlowInputBoundary {
     private final CalendarFlowDataAccessInterface calendarFlowDataAccess;
@@ -28,21 +28,23 @@ public class CalendarFlowInteractor implements CalendarFlowInputBoundary {
         }
 
         try {
-            List<Event> events = calendarFlowDataAccess.getEventsByDate(
+            final List<Event> events = calendarFlowDataAccess.getEventsByDate(
                     inputData.getSelectedDate(),
                     inputData.getUserLocation(),
                     inputData.getRadiusKm()
             );
 
-            LocalDate date = inputData.getSelectedDate();
+            final LocalDate date = inputData.getSelectedDate();
             if (events == null || events.isEmpty()) {
                 presenter.prepareFailView("No events found for " + date);
-            } else {
-                CalendarFlowOutputData outputData = new CalendarFlowOutputData(date, events);
+            }
+            else {
+                final CalendarFlowOutputData outputData = new CalendarFlowOutputData(date, events);
                 presenter.prepareSuccessView(outputData);
             }
-        } catch (Exception e) {
-            presenter.prepareFailView("Error fetching events: " + e.getMessage());
+        }
+        catch (Exception ex) {
+            presenter.prepareFailView("Error fetching events: " + ex.getMessage());
         }
     }
 

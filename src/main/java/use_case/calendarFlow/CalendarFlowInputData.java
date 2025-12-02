@@ -1,8 +1,9 @@
 package use_case.calendarFlow;
 
+import java.time.LocalDate;
+
 import entity.Location;
 
-import java.time.LocalDate;
 /**
  * Input Data for the Calendar Flow Use Case.
  */

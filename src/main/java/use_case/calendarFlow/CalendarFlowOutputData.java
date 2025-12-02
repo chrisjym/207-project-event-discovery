@@ -1,8 +1,9 @@
 package use_case.calendarFlow;
 
-import entity.Event;
-import java.util.List;
 import java.time.LocalDate;
+import java.util.List;
+
+import entity.Event;
 
 /**
  * Output Data for the Calendar Flow Use Case.
