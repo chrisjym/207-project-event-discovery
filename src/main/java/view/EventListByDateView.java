@@ -36,7 +36,6 @@ import interface_adapter.calendarFlow.CalendarFlowViewModel;
  * with each event displayed as a card showing its name, location, and time.
  * Users can click on individual events to view more details.
  */
-@SuppressWarnings({"checkstyle:ClassDataAbstractionCoupling", "checkstyle:SuppressWarnings"})
 public class EventListByDateView extends JPanel implements PropertyChangeListener {
     private final String viewName = "event list by date";
     private CalendarFlowViewModel calendarFlowViewModel;

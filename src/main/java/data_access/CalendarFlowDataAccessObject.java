@@ -57,9 +57,9 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
     }
 
     private List<Event> fetchEvents(String url) {
-        List<Event> events = new ArrayList<>();
+        final List<Event> events = new ArrayList<>();
 
-        Request request = new Request.Builder()
+        final Request request = new Request.Builder()
                 .url(url)
                 .build();
 
@@ -69,14 +69,14 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
                 return events;
             }
 
-            String jsonResponse = response.body().string();
-            JSONObject root = new JSONObject(jsonResponse);
+            final String jsonResponse = response.body().string();
+            final JSONObject root = new JSONObject(jsonResponse);
 
             if (!root.has("_embedded")) {
                 return events;
             }
 
-            JSONObject embedded = root.getJSONObject("_embedded");
+            final JSONObject embedded = root.getJSONObject("_embedded");
             if (!embedded.has("events")) {
                 return events;
             }
@@ -84,15 +84,16 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
             JSONArray eventsArray = embedded.getJSONArray("events");
 
             for (int i = 0; i < eventsArray.length(); i++) {
-                JSONObject eventJson = eventsArray.getJSONObject(i);
+                final JSONObject eventJson = eventsArray.getJSONObject(i);
                 Event event = parseEvent(eventJson);
                 if (event != null) {
                     events.add(event);
                 }
             }
 
-        } catch (IOException e) {
-            System.err.println("Error fetching events: " + e.getMessage());
+        }
+        catch (IOException evt) {
+            System.err.println("Error fetching events: " + evt.getMessage());
         }
 
         return events;
@@ -100,35 +101,38 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
 
     private Event parseEvent(JSONObject eventJson) {
         try {
-            String id = eventJson.getString("id");
-            String name = eventJson.getString("name");
+            final String id = eventJson.getString("id");
+            final String name = eventJson.getString("name");
 
             String description = "";
             if (eventJson.has("info")) {
                 description = eventJson.getString("info");
-            } else if (eventJson.has("description")) {
+            }
+            else if (eventJson.has("description")) {
                 description = eventJson.getString("description");
-            } else if (eventJson.has("pleaseNote")) {
+            }
+            else if (eventJson.has("pleaseNote")) {
                 description = eventJson.getString("pleaseNote");
             }
 
-            EventCategory category = extractCategory(eventJson);
-            Location location = extractLocation(eventJson);
+            final EventCategory category = extractCategory(eventJson);
+            final Location location = extractLocation(eventJson);
             if (location == null) {
                 return null;
             }
 
-            LocalDateTime startTime = extractStartTime(eventJson);
+            final LocalDateTime startTime = extractStartTime(eventJson);
             if (startTime == null) {
                 return null;
             }
 
-            String imageUrl = extractImageUrl(eventJson);
+            final String imageUrl = extractImageUrl(eventJson);
 
-            return new Event(id, name, description,location.getAddress() ,category, location, startTime, imageUrl);
+            return new Event(id, name, description, location.getAddress(), category, location, startTime, imageUrl);
 
-        } catch (Exception e) {
-            System.err.println("Error parsing event: " + e.getMessage());
+        }
+        catch (Exception evt) {
+            System.err.println("Error parsing event: " + evt.getMessage());
             return null;
         }
     }
@@ -144,8 +148,9 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
                     }
                 }
             }
-        } catch (Exception e) {
-            System.err.println("Error extracting image URL: " + e.getMessage());
+        }
+        catch (Exception evt) {
+            System.err.println("Error extracting image URL: " + evt.getMessage());
         }
         return "";
     }
@@ -180,38 +185,40 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
                     }
                 }
             }
-        } catch (Exception e) {
-            System.err.println("Error extracting category: " + e.getMessage());
+        }
+        catch (Exception evt) {
+            System.err.println("Error extracting category: " + evt.getMessage());
         }
 
         return EventCategory.MISCELLANEOUS;
     }
+
     private Location extractLocation(JSONObject eventJson) {
         try {
             if (!eventJson.has("_embedded")) {
                 return null;
             }
 
-            JSONObject embedded = eventJson.getJSONObject("_embedded");
+            final JSONObject embedded = eventJson.getJSONObject("_embedded");
             if (!embedded.has("venues")) {
                 return null;
             }
 
-            JSONArray venues = embedded.getJSONArray("venues");
+            final JSONArray venues = embedded.getJSONArray("venues");
             if (venues.length() == 0) {
                 return null;
             }
 
-            JSONObject venue = venues.getJSONObject(0);
+            final JSONObject venue = venues.getJSONObject(0);
 
-            StringBuilder addressBuilder = new StringBuilder();
+            final StringBuilder addressBuilder = new StringBuilder();
 
             if (venue.has("name")) {
                 addressBuilder.append(venue.getString("name"));
             }
 
             if (venue.has("address")) {
-                JSONObject address = venue.getJSONObject("address");
+                final JSONObject address = venue.getJSONObject("address");
                 if (address.has("line1")) {
                     if (addressBuilder.length() > 0) {
                         addressBuilder.append(", ");
@@ -221,7 +228,7 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
             }
 
             if (venue.has("city")) {
-                JSONObject city = venue.getJSONObject("city");
+                final JSONObject city = venue.getJSONObject("city");
                 if (city.has("name")) {
                     if (addressBuilder.length() > 0) {
                         addressBuilder.append(", ");
@@ -231,7 +238,7 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
             }
 
             if (venue.has("state")) {
-                JSONObject state = venue.getJSONObject("state");
+                final JSONObject state = venue.getJSONObject("state");
                 if (state.has("stateCode")) {
                     if (addressBuilder.length() > 0) {
                         addressBuilder.append(", ");
@@ -254,13 +261,14 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
                 return null;
             }
 
-            double latitude = locationJson.getDouble("latitude");
-            double longitude = locationJson.getDouble("longitude");
+            final double latitude = locationJson.getDouble("latitude");
+            final double longitude = locationJson.getDouble("longitude");
 
             return new Location(address, latitude, longitude);
 
-        } catch (Exception e) {
-            System.err.println("Error extracting location: " + e.getMessage());
+        }
+        catch (Exception evt) {
+            System.err.println("Error extracting location: " + evt.getMessage());
             return null;
         }
     }
@@ -271,20 +279,21 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
                 return null;
             }
 
-            JSONObject dates = eventJson.getJSONObject("dates");
+            final JSONObject dates = eventJson.getJSONObject("dates");
             if (!dates.has("start")) {
                 return null;
             }
 
-            JSONObject start = dates.getJSONObject("start");
+            final JSONObject start = dates.getJSONObject("start");
 
             if (start.has("dateTime")) {
                 String dateTimeStr = start.getString("dateTime");
                 dateTimeStr = dateTimeStr.replace("Z", "");
-                DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+                final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
                 return LocalDateTime.parse(dateTimeStr, formatter);
-            } else if (start.has("localDate")) {
-                String localDate = start.getString("localDate");
+            }
+            else if (start.has("localDate")) {
+                final String localDate = start.getString("localDate");
                 String localTime = "19:00:00";
                 if (start.has("localTime")) {
                     localTime = start.getString("localTime");
@@ -294,8 +303,9 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
 
             return null;
 
-        } catch (Exception e) {
-            System.err.println("Error extracting start time: " + e.getMessage());
+        }
+        catch (Exception evt) {
+            System.err.println("Error extracting start time: " + evt.getMessage());
             return null;
         }
     }
@@ -322,7 +332,7 @@ public class CalendarFlowDataAccessObject implements CalendarFlowDataAccessInter
             return EventCategory.MISCELLANEOUS;
         }
 
-        String normalized = ticketmasterName.toLowerCase().trim();
+        final String normalized = ticketmasterName.toLowerCase().trim();
 
         if (normalized.contains("music") || normalized.contains("concert")) {
             return EventCategory.MUSIC;

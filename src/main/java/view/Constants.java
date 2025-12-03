@@ -4,6 +4,13 @@ package view;
  * Constants used in this program.
  */
 public final class Constants {
+    // Constants for CalendarView
+    public static final int NUMBER_OF_DAY_BUTTONS = 42;
+    public static final double SEARCH_RADIUS_KM_DEFAULT = 50.0;
+    public static final int MONTH_YEAR_LABEL_TEXT_FONT_SIZE = 18;
+    public static final int DAY_LABEL_TEXT_FONT_SIZE = 12;
+    public static final int DAY_BUTTONS_FONT_SIZE = 12;
+
     // Constants for EventListByDateView.java
     // EventListByDateView method
     public static final int EMPTY_BORDER_SIZE = 5;
