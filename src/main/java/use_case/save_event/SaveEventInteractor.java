@@ -9,11 +9,11 @@ import java.util.List;
 public class SaveEventInteractor implements SaveEventInputBoundary {
 
     private SaveEventOutputBoundary eventPresenter;
-    private FileSavedEventsDataAccessObject savedEventsDAO;
+    private SaveEventDataAccessInterface savedEventsDAO;
     private LoginUserDataAccessInterface userDataAccess;
 
     public SaveEventInteractor(SaveEventOutputBoundary outputBoundary,
-                               FileSavedEventsDataAccessObject savedEventsDAO,
+                               SaveEventDataAccessInterface savedEventsDAO,
                                LoginUserDataAccessInterface userDataAccess) {
         this.eventPresenter = outputBoundary;
         this.savedEventsDAO = savedEventsDAO;

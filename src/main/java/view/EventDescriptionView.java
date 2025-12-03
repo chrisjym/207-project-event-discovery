@@ -3,6 +3,7 @@ package view;
 import entity.Event;
 import entity.Location;
 import interface_adapter.ViewManagerModel;
+import interface_adapter.ViewNames;
 import interface_adapter.event_description.EventDescriptionViewModel;
 import interface_adapter.save_event.SaveEventController;
 import use_case.save_event.SaveEventInteractor;
@@ -37,7 +38,7 @@ public class EventDescriptionView extends JPanel implements PropertyChangeListen
     private Event currentEvent;
 
     // Track which view we came from for back navigation
-    private String previousViewName = "display local events";
+    private String previousViewName = ViewNames.DISPLAY_LOCAL_EVENTS;
 
     // UI Components
     private final JLabel titleLabel = new JLabel("", SwingConstants.LEFT);

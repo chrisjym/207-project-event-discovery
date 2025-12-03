@@ -27,6 +27,7 @@ import javax.swing.border.EmptyBorder;
 
 import entity.Event;
 import interface_adapter.ViewManagerModel;
+import interface_adapter.ViewNames;
 import interface_adapter.save_event.SaveEventController;
 import interface_adapter.save_event.SaveEventViewModel;
 import use_case.save_event.SaveEventInteractor;
@@ -71,7 +72,7 @@ public class SaveEventsView extends JPanel implements PropertyChangeListener {
     private static final Color TEXT_MEDIUM_GRAY = new Color(150, 150, 150);
     private static final Color TEXT_DARK_GRAY = new Color(50, 50, 50);
 
-    private final String viewName = "save event";
+    private final String viewName = ViewNames.SAVE_EVENTS;
     private final SaveEventViewModel viewModel;
     private ViewManagerModel viewManagerModel;
     private SaveEventInteractor saveEventInteractor;

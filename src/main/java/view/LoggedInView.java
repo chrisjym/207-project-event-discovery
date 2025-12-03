@@ -1,5 +1,6 @@
 package view;
 
+import interface_adapter.ViewNames;
 import interface_adapter.logged_in.ChangePasswordController;
 import interface_adapter.logged_in.LoggedInState;
 import interface_adapter.logged_in.LoggedInViewModel;
@@ -19,7 +20,7 @@ import java.beans.PropertyChangeListener;
  */
 public class LoggedInView extends JPanel implements ActionListener, PropertyChangeListener {
 
-    private final String viewName = "logged in";
+    private final String viewName = ViewNames.LOGGED_IN;
     private final LoggedInViewModel loggedInViewModel;
     private final JLabel passwordErrorField = new JLabel();
     private ChangePasswordController changePasswordController = null;

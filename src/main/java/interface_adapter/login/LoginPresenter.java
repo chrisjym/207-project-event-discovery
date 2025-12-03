@@ -1,6 +1,7 @@
 package interface_adapter.login;
 
 import interface_adapter.ViewManagerModel;
+import interface_adapter.ViewNames;
 import interface_adapter.logged_in.LoggedInState;
 import interface_adapter.logged_in.LoggedInViewModel;
 import interface_adapter.signup.SignupViewModel;
@@ -27,22 +28,6 @@ public class LoginPresenter implements LoginOutputBoundary {
         this.signUpViewModel = signupViewModel;
     }
 
-    // OLD CODE
-//    @Override
-//    public void prepareSuccessView(LoginOutputData response) {
-//        // On success, update the loggedInViewModel's state
-//        final LoggedInState loggedInState = loggedInViewModel.getState();
-//        loggedInState.setUsername(response.getUsername());
-//        this.loggedInViewModel.firePropertyChange();
-//
-//        // and clear everything from the LoginViewModel's state
-//        loginViewModel.setState(new LoginState());
-//
-//        // switch to the logged in view
-//        viewManagerModel.setState("display local events");
-//        viewManagerModel.firePropertyChange();
-//    }
-
     @Override
     public void prepareSuccessView(LoginOutputData response) {
         final LoggedInState loggedInState = loggedInViewModel.getState();
@@ -52,10 +37,9 @@ public class LoginPresenter implements LoginOutputBoundary {
         loginViewModel.setState(new LoginState());
 
         // The view will load the user's location when it becomes visible
-        viewManagerModel.setState("display local events");
+        viewManagerModel.setState(ViewNames.DISPLAY_LOCAL_EVENTS);
         viewManagerModel.firePropertyChange();
     }
-
 
     @Override
     public void prepareFailView(String error) {

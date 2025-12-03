@@ -1,6 +1,7 @@
 package interface_adapter.search_event_by_name;
 
 import interface_adapter.ViewManagerModel;
+import interface_adapter.ViewNames;
 import use_case.search_event_by_name.SearchEventByNameOutputBoundary;
 import use_case.search_event_by_name.SearchEventByNameOutputData;
 
@@ -38,7 +39,7 @@ public class SearchEventByNamePresenter implements SearchEventByNameOutputBounda
 
     @Override
     public void switchToDashboardView() {
-        viewManagerModel.setState("display local events");
+        viewManagerModel.setState(ViewNames.DISPLAY_LOCAL_EVENTS);
         viewManagerModel.firePropertyChange();
     }
 }

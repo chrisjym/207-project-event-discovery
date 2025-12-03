@@ -2,6 +2,7 @@ package view;
 
 import javax.swing.*;
 
+import interface_adapter.ViewNames;
 import interface_adapter.save_event.SaveEventController;
 import interface_adapter.search_event_by_name.SearchEventByNameController;
 import interface_adapter.search_event_by_name.SearchEventByNameViewModel;
@@ -17,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 
 public class SearchEventByNameView extends JPanel implements PropertyChangeListener {
 
-    private final String viewName = "event search";
+    private final String viewName = ViewNames.EVENT_SEARCH;
     private final SearchEventByNameViewModel searchEventByNameViewModel;
     private SearchEventByNameController eventController = null;
 

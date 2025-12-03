@@ -3,6 +3,7 @@ package interface_adapter.calendarFlow;
 import java.util.ArrayList;
 
 import interface_adapter.ViewManagerModel;
+import interface_adapter.ViewNames;
 import use_case.calendarFlow.CalendarFlowOutputBoundary;
 import use_case.calendarFlow.CalendarFlowOutputData;
 
@@ -41,7 +42,7 @@ public class CalendarFlowPresenter implements CalendarFlowOutputBoundary {
 
     @Override
     public void switchToDashboardView() {
-        viewManagerModel.setState("display local events");
+        viewManagerModel.setState(ViewNames.DISPLAY_LOCAL_EVENTS);
         viewManagerModel.firePropertyChange();
     }
 }

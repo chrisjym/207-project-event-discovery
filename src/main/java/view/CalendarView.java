@@ -16,6 +16,7 @@ import javax.swing.SwingConstants;
 
 import entity.Location;
 import interface_adapter.ViewManagerModel;
+import interface_adapter.ViewNames;
 import interface_adapter.calendarFlow.CalendarFlowController;
 
 /**
@@ -24,7 +25,7 @@ import interface_adapter.calendarFlow.CalendarFlowController;
  * that coordinate multiple UI elements. This follows Clean Architecture principles
  */
 public class CalendarView extends JPanel implements ActionListener {
-    private final String viewName = "calendar view";
+    private final String viewName = ViewNames.CALENDAR;
     private final JLabel monthYearLabel = new JLabel("", SwingConstants.CENTER);
     private final JButton previousMonthButton = new JButton("◀");
     private final JButton nextMonthButton = new JButton("▶");

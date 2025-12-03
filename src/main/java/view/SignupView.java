@@ -1,5 +1,6 @@
 package view;
 
+import interface_adapter.ViewNames;
 import interface_adapter.signup.SignupController;
 import interface_adapter.signup.SignupState;
 import interface_adapter.signup.SignupViewModel;
@@ -21,7 +22,7 @@ import java.beans.PropertyChangeListener;
  * The View for the Signup Use Case.
  */
 public class SignupView extends JPanel implements ActionListener, PropertyChangeListener {
-    private final String viewName = "sign up";
+    private final String viewName = ViewNames.SIGNUP;
 
     private final SignupViewModel signupViewModel;
     private final JTextField usernameInputField = new JTextField(15);

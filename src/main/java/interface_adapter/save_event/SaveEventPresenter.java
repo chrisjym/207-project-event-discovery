@@ -1,6 +1,7 @@
 package interface_adapter.save_event;
 
 import interface_adapter.ViewManagerModel;
+import interface_adapter.ViewNames;
 import use_case.save_event.SaveEventOutputBoundary;
 import use_case.save_event.SaveEventOutputData;
 
@@ -32,9 +33,8 @@ public class SaveEventPresenter implements SaveEventOutputBoundary {
 
     @Override
     public void switchToDashboardView() {
-        viewManagerModel.setState("display local events"); // or whatever the dashboard view name is
+        viewManagerModel.setState(ViewNames.DISPLAY_LOCAL_EVENTS);
         viewManagerModel.firePropertyChange();
     }
-
 
 }

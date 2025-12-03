@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 import entity.Event;
 import interface_adapter.ViewManagerModel;
+import interface_adapter.ViewNames;
 import interface_adapter.calendarFlow.CalendarFlowController;
 import interface_adapter.calendarFlow.CalendarFlowState;
 import interface_adapter.calendarFlow.CalendarFlowViewModel;
@@ -37,7 +38,7 @@ import interface_adapter.calendarFlow.CalendarFlowViewModel;
  * Users can click on individual events to view more details.
  */
 public class EventListByDateView extends JPanel implements PropertyChangeListener {
-    private final String viewName = "event list by date";
+    private final String viewName = ViewNames.EVENT_LIST_BY_DATE;
     private CalendarFlowViewModel calendarFlowViewModel;
     private CalendarFlowController calendarFlowController;
     private ViewManagerModel viewManagerModel;

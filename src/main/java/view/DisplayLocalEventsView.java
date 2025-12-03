@@ -3,6 +3,7 @@ package view;
 import entity.Event;
 import entity.Location;
 import interface_adapter.ViewManagerModel;
+import interface_adapter.ViewNames;
 import interface_adapter.search.SearchController;
 import interface_adapter.display_local_events.DisplayLocalEventsController;
 import interface_adapter.display_local_events.DisplayLocalEventsViewModel;
@@ -40,7 +41,7 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
 
     private CalendarView calendarView;
 
-    private final String viewName = "display local events";
+    private final String viewName = ViewNames.DISPLAY_LOCAL_EVENTS;
 
     // Location components
     private UpdateLocationController updateLocationController;
@@ -830,21 +831,21 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
         }
 
         if (viewManagerModel != null) {
-            viewManagerModel.setState("calendar view");
+            viewManagerModel.setState(ViewNames.CALENDAR);
             viewManagerModel.firePropertyChange();
         }
     }
 
     private void navigateToSavedEvents() {
         if (viewManagerModel != null) {
-            viewManagerModel.setState("save event");
+            viewManagerModel.setState(ViewNames.SAVE_EVENTS);
             viewManagerModel.firePropertyChange();
         }
     }
 
     private void handleLogout() {
         userLocation = null;
-        locationLoaded = false;  // Reset so location can be loaded on next login
+        locationLoaded = false;
         selectedDate = null;
         updateDateFilterDisplay();
         if (currentLocationLabel != null) {
@@ -852,7 +853,7 @@ public class DisplayLocalEventsView extends JPanel implements PropertyChangeList
             currentLocationLabel.setForeground(new Color(255, 200, 200));
         }
         if (viewManagerModel != null) {
-            viewManagerModel.setState("log in");
+            viewManagerModel.setState(ViewNames.LOGIN);
             viewManagerModel.firePropertyChange();
         }
     }
