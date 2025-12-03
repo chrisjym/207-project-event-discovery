@@ -1,10 +1,10 @@
 package interface_adapter.calendarFlow;
 
+import java.util.ArrayList;
+
 import interface_adapter.ViewManagerModel;
 import use_case.calendarFlow.CalendarFlowOutputBoundary;
 import use_case.calendarFlow.CalendarFlowOutputData;
-
-import java.util.ArrayList;
 
 public class CalendarFlowPresenter implements CalendarFlowOutputBoundary {
     private final CalendarFlowViewModel viewModel;
@@ -16,8 +16,8 @@ public class CalendarFlowPresenter implements CalendarFlowOutputBoundary {
     }
 
     @Override
-    public void prepareSuccessView(CalendarFlowOutputData outputData){
-        CalendarFlowState state = new CalendarFlowState();
+    public void prepareSuccessView(CalendarFlowOutputData outputData) {
+        final CalendarFlowState state = new CalendarFlowState();
         state.setEventList(outputData.getEvents());
         state.setDate(outputData.getSelectedDate());
         state.setErrorMessage(null);
@@ -30,8 +30,8 @@ public class CalendarFlowPresenter implements CalendarFlowOutputBoundary {
     }
 
     @Override
-    public void prepareFailView(String errorMessage){
-        CalendarFlowState state = viewModel.getState();
+    public void prepareFailView(String errorMessage) {
+        final CalendarFlowState state = viewModel.getState();
         state.setEventList(new ArrayList<>());
         state.setErrorMessage(errorMessage);
 

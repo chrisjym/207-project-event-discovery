@@ -1,15 +1,16 @@
 package interface_adapter.calendarFlow;
 
+import java.time.LocalDate;
+
 import entity.Location;
 import use_case.calendarFlow.CalendarFlowInputBoundary;
 import use_case.calendarFlow.CalendarFlowInputData;
-import java.time.LocalDate;
 
 public class CalendarFlowController {
-    private final CalendarFlowInputBoundary CalendarFlowInteractor;
+    private final CalendarFlowInputBoundary calendarFlowInteractor;
 
     public CalendarFlowController(CalendarFlowInputBoundary interactor) {
-        this.CalendarFlowInteractor = interactor;
+        this.calendarFlowInteractor = interactor;
     }
 
     /**
@@ -18,13 +19,17 @@ public class CalendarFlowController {
      * @param userLocation the user's location
      * @param radiusKm the search radius in kilometers
      */
-    public void execute(LocalDate selectedDate, Location userLocation, double radiusKm){
+    public void execute(LocalDate selectedDate, Location userLocation, double radiusKm) {
         final CalendarFlowInputData inputData = new CalendarFlowInputData(selectedDate, userLocation, radiusKm);
 
-        CalendarFlowInteractor.execute(inputData);
+        calendarFlowInteractor.execute(inputData);
     }
 
+    /**
+     * Handles the request to switch to the dashboard view.
+     * This method delegates the view change logic to the calendar flow interactor
+     */
     public void switchToDashboardView() {
-        CalendarFlowInteractor.switchToDashboardView();
+        calendarFlowInteractor.switchToDashboardView();
     }
 }

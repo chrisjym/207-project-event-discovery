@@ -1,8 +1,9 @@
 package interface_adapter.calendarFlow;
 
-import entity.Event;
-import java.util.List;
 import java.time.LocalDate;
+import java.util.List;
+
+import entity.Event;
 
 public class CalendarFlowState {
     private List<Event> eventList = null;
@@ -15,6 +16,7 @@ public class CalendarFlowState {
     public void setDate(LocalDate date) {
         this.date = date;
     }
+
     public void setEventList(List<Event> eventList) {
         this.eventList = eventList;
     }
@@ -26,9 +28,11 @@ public class CalendarFlowState {
     public List<Event> getEventList() {
         return eventList;
     }
+
     public LocalDate getDate() {
         return date;
     }
+
     public String getErrorMessage() {
         return errorMessage;
     }
